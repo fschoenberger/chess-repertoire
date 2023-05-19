@@ -1,0 +1,3 @@
+[submodule "repertoire"]
+	path = repertoire
+	url = https://github.com/fschoenberger/chess-repertoire-data
