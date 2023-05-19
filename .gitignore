@@ -1,3 +1,6 @@
 .vscode/
 images/
 output/
+
+!images/.gitkeep
+!output/.gitkeep
