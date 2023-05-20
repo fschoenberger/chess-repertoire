@@ -10,8 +10,6 @@
                            mc:Ignorable="d"
                            Title="MainWindow" Height="450" Width="800">
     <DockPanel>
-        <Viewbox>
-            <board:ChessBoard />
-        </Viewbox>
+        <board:ChessBoard />
     </DockPanel>
 </reactiveUi:ReactiveWindow>

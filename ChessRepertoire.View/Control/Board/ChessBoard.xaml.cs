@@ -20,7 +20,7 @@ namespace ChessRepertoire.View.Wpf.Control.Board {
     /// <summary>
     /// Interaction logic for Board.xaml
     /// </summary>
-    public partial class ChessBoard : ReactiveUserControl<BoardViewModel> {
+    public partial class ChessBoard : ReactiveUserControl<IBoardViewModel> {
         public ChessBoard() {
             InitializeComponent();
 

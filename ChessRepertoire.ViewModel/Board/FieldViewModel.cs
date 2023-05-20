@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChessRepertoire.ViewModel.Board {
-    public class FieldViewModel {
+    internal class FieldViewModel : IFieldViewModel
+    {
         public int Row { get; set; }
         public int Column { get; set; }
     }
