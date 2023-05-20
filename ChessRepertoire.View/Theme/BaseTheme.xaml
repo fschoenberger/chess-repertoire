@@ -38,4 +38,8 @@
     <DataTemplate x:Key="RookBlack">
         <sprite:BlackRook />
     </DataTemplate>
+
+    <SolidColorBrush x:Key="LightSquareBrush" Color="NavajoWhite" />
+    <SolidColorBrush x:Key="DarkSquareBrush" Color="Peru" />
+
 </ResourceDictionary>
