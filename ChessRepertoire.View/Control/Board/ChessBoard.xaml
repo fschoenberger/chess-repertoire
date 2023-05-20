@@ -8,6 +8,7 @@
                                 xmlns:reactiveUi="http://reactiveui.net"
                                 xmlns:board="clr-namespace:ChessRepertoire.ViewModel.Board;assembly=ChessRepertoire.ViewModel"
                                 xmlns:converter="clr-namespace:ChessRepertoire.View.Wpf.Converter"
+                                xmlns:selector="clr-namespace:ChessRepertoire.View.Wpf.Selector"
                                 mc:Ignorable="d" 
                                 d:DesignHeight="400" d:DesignWidth="400" d:DataContext="{d:DesignInstance board:DesignTimeBoardViewModel, IsDesignTimeCreatable=True}">
     <Viewbox>
@@ -43,8 +44,33 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl Name="Pieces">
-
+            <ItemsControl Name="Pieces" ItemsSource="{Binding Pieces}">
+                <ItemsControl.Resources>
+                    <selector:PieceIconSelector x:Key="IconSelector" />
+                    <RelativeSource x:Key="parent" Mode="FindAncestor" AncestorType="{x:Type ContentPresenter}" />
+                </ItemsControl.Resources>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="8" Height="8" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Width" Value="1" />
+                        <Setter Property="Height" Value="1" />
+                        <Setter Property="Canvas.Bottom" Value="{Binding (board:IPieceViewModel.Row), Mode=OneTime}" />
+                        <Setter Property="Canvas.Left" Value="{Binding (board:IPieceViewModel.Column), Mode=OneTime}" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl Content="{Binding}">
+                            <ContentControl.ContentTemplateSelector>
+                                <StaticResource ResourceKey="IconSelector" />
+                            </ContentControl.ContentTemplateSelector>
+                        </ContentControl>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Canvas>
     </Viewbox>

@@ -14,15 +14,12 @@
     </PackageReference>
     <PackageReference Include="ReactiveUI" Version="18.4.44" />
     <PackageReference Include="ReactiveUI.WPF" Version="18.4.44" />
+    <PackageReference Include="SharpVectors" Version="1.8.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ChessRepertoire.Infrastructure\ChessRepertoire.Infrastructure.csproj" />
     <ProjectReference Include="..\ChessRepertoire.ViewModel\ChessRepertoire.ViewModel.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Theme\" />
   </ItemGroup>
 
 </Project>

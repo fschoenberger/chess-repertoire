@@ -31,6 +31,11 @@ namespace ChessRepertoire.View.Wpf.Control.Board {
                         viewModel => viewModel.Fields,
                         view => view.Fields.ItemsSource)
                     .DisposeWith(d);
+
+                this.OneWayBind(ViewModel,
+                        viewModel => viewModel.Pieces,
+                        view => view.Pieces.ItemsSource)
+                    .DisposeWith(d);
             });
         }
     }
