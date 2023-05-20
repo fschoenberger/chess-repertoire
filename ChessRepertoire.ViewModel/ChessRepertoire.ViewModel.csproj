@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ReactiveUI" Version="18.4.44" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ChessRepertoire.Model\ChessRepertoire.Model.csproj" />
   </ItemGroup>
 
