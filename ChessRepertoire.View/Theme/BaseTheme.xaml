@@ -1,0 +1,41 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sprite="clr-namespace:ChessRepertoire.View.Wpf.Theme.Sprite">
+    <DataTemplate x:Key="BishopWhite">
+        <sprite:WhiteBishop />
+    </DataTemplate>
+    <DataTemplate x:Key="KingWhite">
+        <sprite:WhiteKing />
+    </DataTemplate>
+    <DataTemplate x:Key="KnightWhite">
+        <sprite:WhiteKnight />
+    </DataTemplate>
+    <DataTemplate x:Key="PawnWhite">
+        <sprite:WhitePawn />
+    </DataTemplate>
+    <DataTemplate x:Key="QueenWhite">
+        <sprite:WhiteQueen />
+    </DataTemplate>
+    <DataTemplate x:Key="RookWhite">
+        <sprite:WhiteRook />
+    </DataTemplate>
+    <!-- Black pieces -->
+    <DataTemplate x:Key="BishopBlack">
+        <sprite:BlackBishop />
+    </DataTemplate>
+    <DataTemplate x:Key="KingBlack">
+        <sprite:BlackKing />
+    </DataTemplate>
+    <DataTemplate x:Key="KnightBlack">
+        <sprite:BlackKnight />
+    </DataTemplate>
+    <DataTemplate x:Key="PawnBlack">
+        <sprite:BlackPawn />
+    </DataTemplate>
+    <DataTemplate x:Key="QueenBlack">
+        <sprite:BlackQueen />
+    </DataTemplate>
+    <DataTemplate x:Key="RookBlack">
+        <sprite:BlackRook />
+    </DataTemplate>
+</ResourceDictionary>
