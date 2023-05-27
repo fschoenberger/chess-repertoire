@@ -6,9 +6,9 @@ using System.Windows.Media;
 
 namespace ChessRepertoire.View.Wpf.Converter {
     public class FieldBrushConverter : IMultiValueConverter {
-        private readonly Brush _whiteBrush = Application.Current.FindResource("LightSquareBrush") as Brush;
+        private readonly Brush _whiteBrush = Application.Current.FindResource("LightSquareBrush") as Brush ?? new SolidColorBrush(Colors.NavajoWhite);
 
-        private readonly Brush _blackBrush = Application.Current.FindResource("DarkSquareBrush") as Brush;
+        private readonly Brush _blackBrush = Application.Current.FindResource("DarkSquareBrush") as Brush ?? new SolidColorBrush(Colors.Peru);
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) {
             if (values.Length != 2 || !typeof(Brush).IsAssignableFrom(targetType)) {
