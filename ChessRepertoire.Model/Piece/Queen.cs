@@ -1,6 +1,6 @@
 ﻿namespace ChessRepertoire.Model.Piece;
 
-public class Queen : Piece {
+public class Queen : ChessPiece {
     public Queen(Color color) {
         Color = color;
     }

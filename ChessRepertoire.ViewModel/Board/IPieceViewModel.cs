@@ -3,7 +3,7 @@
 namespace ChessRepertoire.ViewModel.Board;
 
 public interface IPieceViewModel {
-    Piece Piece { get; }
+    ChessPiece ChessPiece { get; }
     int Row { get; }
     int Column { get; }
 }

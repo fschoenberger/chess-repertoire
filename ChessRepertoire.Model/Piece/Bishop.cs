@@ -1,6 +1,6 @@
 ﻿namespace ChessRepertoire.Model.Piece;
 
-public class Bishop : Piece {
+public class Bishop : ChessPiece {
     public Bishop(Color color) {
         Color = color;
     }

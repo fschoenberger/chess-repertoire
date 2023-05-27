@@ -1,6 +1,6 @@
 ﻿namespace ChessRepertoire.Model.Piece;
 
-public abstract class Piece : IPieceVisitable {
+public abstract class ChessPiece : IPieceVisitable {
     public Color Color { get; set; }
 
     public abstract void Accept(IPieceVisitor visitor);
