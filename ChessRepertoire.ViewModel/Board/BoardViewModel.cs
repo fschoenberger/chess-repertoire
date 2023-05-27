@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using ChessRepertoire.Model.Board;
 using DynamicData;
 using ReactiveUI;
@@ -30,7 +31,9 @@ namespace ChessRepertoire.ViewModel.Board {
         private readonly ReadOnlyObservableCollection<IPieceViewModel> _pieces;
         public ReadOnlyObservableCollection<IPieceViewModel> Pieces => _pieces;
 
-        [Reactive] public Color Orientation { get; set; } = Color.White;
+        [Reactive] public Color Orientation { get; set; } = Color.Black;
+
+        public ICommand FlipBoard { get; }
 
         public BoardViewModel() {
             _board = new ChessBoard();
@@ -42,6 +45,10 @@ namespace ChessRepertoire.ViewModel.Board {
                     _fields[i, j] = new FieldViewModel { Row = i, Column = j };
                 }
             }
+
+            FlipBoard = ReactiveCommand.Create(() => {
+                Orientation = Orientation == Color.Black ? Color.White : Color.Black;
+            });
 
             _board.Pieces.Connect()
                 .Transform(p => (IPieceViewModel) new PieceViewModel(p))

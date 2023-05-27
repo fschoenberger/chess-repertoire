@@ -1,5 +1,7 @@
 ﻿using System.Reactive.Disposables;
 using ChessRepertoire.ViewModel.Board;
+using ReactiveMarbles.ObservableEvents;
+using System.Windows.Controls;
 using ReactiveUI;
 
 namespace ChessRepertoire.View.Wpf.Control.Board {
@@ -22,6 +24,8 @@ namespace ChessRepertoire.View.Wpf.Control.Board {
                         viewModel => viewModel.Pieces,
                         view => view.Pieces.ItemsSource)
                     .DisposeWith(d);
+
+                this.BindCommand(ViewModel, vm => vm.FlipBoard, v => v.FlipButton).DisposeWith(d);
             });
         }
     }

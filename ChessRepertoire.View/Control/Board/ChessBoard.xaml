@@ -11,6 +11,7 @@
                                 xmlns:selector="clr-namespace:ChessRepertoire.View.Wpf.Selector"
                                 mc:Ignorable="d" 
                                 d:DesignHeight="400" d:DesignWidth="400" d:DataContext="{d:DesignInstance board:DesignTimeBoardViewModel, IsDesignTimeCreatable=True}">
+    <StackPanel Orientation="Horizontal">
     <Viewbox>
         <Canvas Width="8" Height="8">
             <ItemsControl Name="Fields" ItemsSource="{Binding Fields}">
@@ -47,7 +48,8 @@
             <ItemsControl Name="Pieces" ItemsSource="{Binding Pieces}">
                 <ItemsControl.Resources>
                     <selector:PieceIconSelector x:Key="IconSelector" />
-                    <RelativeSource x:Key="parent" Mode="FindAncestor" AncestorType="{x:Type ContentPresenter}" />
+                    <converter:OrientationCoordinateConverter x:Key="OrientationCoordinateConverter" />
+                    <RelativeSource x:Key="Parent" Mode="FindAncestor" AncestorType="{x:Type local:ChessBoard}" />
                 </ItemsControl.Resources>
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -58,8 +60,22 @@
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Width" Value="1" />
                         <Setter Property="Height" Value="1" />
-                        <Setter Property="Canvas.Bottom" Value="{Binding (board:IPieceViewModel.Rank), Mode=OneTime}" />
-                        <Setter Property="Canvas.Left" Value="{Binding (board:IPieceViewModel.File), Mode=OneTime}" />
+                        <Setter Property="Canvas.Bottom">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
+                                    <Binding Path="(board:IPieceViewModel.Rank)" />
+                                    <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Canvas.Left">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
+                                    <Binding Path="(board:IPieceViewModel.File)" />
+                                    <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
@@ -74,4 +90,6 @@
             </ItemsControl>
         </Canvas>
     </Viewbox>
+        <Button x:Name="FlipButton">Flip!</Button>
+    </StackPanel>
 </reactiveUi:ReactiveUserControl>
