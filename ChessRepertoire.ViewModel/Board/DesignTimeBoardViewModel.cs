@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ChessRepertoire.Model.Piece;
+using ChessRepertoire.Model.Board;
 using ReactiveUI;
 
 namespace ChessRepertoire.ViewModel.Board {
@@ -17,16 +17,12 @@ namespace ChessRepertoire.ViewModel.Board {
             }
         }
 
-        public ObservableCollection<IPieceViewModel> Pieces { get; } = new(new List<IPieceViewModel>
+        private ObservableCollection<IPieceViewModel> _pieces = new(new List<IPieceViewModel>
         {
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 0 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 1 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 2 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 3 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 4 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 5 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 6 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 7 },
+            new PieceViewModel(PieceType.Pawn, Color.White, 1, 1),
         });
+
+
+        public ReadOnlyObservableCollection<IPieceViewModel> Pieces => new(_pieces);
     }
 }

@@ -5,41 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using ChessRepertoire.Model.Piece;
+using ChessRepertoire.Model.Board;
+using ChessRepertoire.ViewModel.Board;
 
 namespace ChessRepertoire.View.Wpf.Selector {
-    internal class PieceIconSelector : DataTemplateSelector, IPieceVisitor<string> {
+    internal class PieceIconSelector : DataTemplateSelector {
         public override DataTemplate SelectTemplate(object item, DependencyObject container) {
-            if (item is IPieceVisitable piece) {
-                var ret = Application.Current.FindResource(piece.Accept(this)) as DataTemplate;
+            if (item is IPieceViewModel piece) {
+                var ret = Application.Current.FindResource(piece.Type + "" + piece.Color) as DataTemplate;
                 return ret;
             }
 
             return base.SelectTemplate(item, container);
-        }
-
-        public string Visit(Pawn pawn) {
-            return "Pawn" + pawn.Color;
-        }
-
-        public string Visit(Knight knight) {
-            return "Knight" + knight.Color;
-        }
-
-        public string Visit(Bishop bishop) {
-            return "Bishop" + bishop.Color;
-        }
-
-        public string Visit(Rook rook) {
-            return "Rook" + rook.Color;
-        }
-
-        public string Visit(Queen queen) {
-            return "Queen" + queen.Color;
-        }
-
-        public string Visit(King king) {
-            return "King" + king.Color;
         }
     }
 }

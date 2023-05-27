@@ -7,5 +7,5 @@ public interface IBoardViewModel : IReactiveObject
 {
     public IEnumerable<IFieldViewModel> Fields { get; }
 
-    public ObservableCollection<IPieceViewModel> Pieces { get; }
+    public ReadOnlyObservableCollection<IPieceViewModel> Pieces { get; }
 }

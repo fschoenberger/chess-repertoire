@@ -1,9 +1,10 @@
-﻿using ChessRepertoire.Model.Piece;
+﻿using ChessRepertoire.Model.Board;
 
 namespace ChessRepertoire.ViewModel.Board;
 
 public interface IPieceViewModel {
-    ChessPiece ChessPiece { get; }
-    int Row { get; }
-    int Column { get; }
+    public PieceType Type { get; }
+    public Color Color { get; }
+    public int Rank { get; }
+    public int File { get; }
 }

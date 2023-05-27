@@ -2,25 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ChessRepertoire.Model.Piece;
+using ChessRepertoire.Model.Board;
+using DynamicData;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
 namespace ChessRepertoire.ViewModel.Board {
     public class BoardViewModel : ReactiveObject, IBoardViewModel {
-        private IFieldViewModel[,] _fields;
-
-        public BoardViewModel() {
-            _fields = new IFieldViewModel[8, 8];
-
-            for (var i = 0; i < 8; ++i) {
-                for (var j = 0; j < 8; ++j) {
-                    _fields[i, j] = new FieldViewModel { Row = i, Column = j };
-                }
-            }
-        }
-
+        private readonly IFieldViewModel[,] _fields;
         public IEnumerable<IFieldViewModel> Fields {
             get {
                 var rowCount = _fields.GetLength(0);
@@ -33,44 +25,29 @@ namespace ChessRepertoire.ViewModel.Board {
             }
         }
 
-        public ObservableCollection<IPieceViewModel> Pieces { get; } = new(new List<IPieceViewModel>
-        {
-            new PieceViewModel { ChessPiece = new Rook(Color.White), Row = 0, Column = 0 },
-            new PieceViewModel { ChessPiece = new Knight(Color.White), Row = 0, Column = 1 },
-            new PieceViewModel { ChessPiece = new Bishop(Color.White), Row = 0, Column = 2 },
-            new PieceViewModel { ChessPiece = new Queen(Color.White), Row = 0, Column = 3 },
-            new PieceViewModel { ChessPiece = new King(Color.White), Row = 0, Column = 4 },
-            new PieceViewModel { ChessPiece = new Bishop(Color.White), Row = 0, Column = 5 },
-            new PieceViewModel { ChessPiece = new Knight(Color.White), Row = 0, Column = 6 },
-            new PieceViewModel { ChessPiece = new Rook(Color.White), Row = 0, Column = 7 },
+        private readonly ChessBoard _board;
 
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 0 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 1 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 2 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 3 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 4 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 5 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 6 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.White), Row = 1, Column = 7 },
+        private readonly ReadOnlyObservableCollection<IPieceViewModel> _pieces;
+        public ReadOnlyObservableCollection<IPieceViewModel> Pieces => _pieces;
 
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 0 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 1 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 2 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 3 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 4 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 5 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 6 },
-            new PieceViewModel { ChessPiece = new Pawn(Color.Black), Row = 6, Column = 7 },
+        [Reactive] public Color Orientation { get; set; } = Color.White;
 
-            new PieceViewModel { ChessPiece = new Rook(Color.Black), Row = 7, Column = 0 },
-            new PieceViewModel { ChessPiece = new Knight(Color.Black), Row = 7, Column = 1 },
-            new PieceViewModel { ChessPiece = new Bishop(Color.Black), Row = 7, Column = 2 },
-            new PieceViewModel { ChessPiece = new Queen(Color.Black), Row = 7, Column = 3 },
-            new PieceViewModel { ChessPiece = new King(Color.Black), Row = 7, Column = 4 },
-            new PieceViewModel { ChessPiece = new Bishop(Color.Black), Row = 7, Column = 5 },
-            new PieceViewModel { ChessPiece = new Knight(Color.Black), Row = 7, Column = 6 },
-            new PieceViewModel { ChessPiece = new Rook(Color.Black), Row = 7, Column = 7 },
-        });
+        public BoardViewModel() {
+            _board = new ChessBoard();
 
+            _fields = new IFieldViewModel[8, 8];
+
+            for (var i = 0; i < 8; ++i) {
+                for (var j = 0; j < 8; ++j) {
+                    _fields[i, j] = new FieldViewModel { Row = i, Column = j };
+                }
+            }
+
+            _board.Pieces.Connect()
+                .Transform(p => (IPieceViewModel) new PieceViewModel(p))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _pieces)
+                .Subscribe();
+        }
     }
 }

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using ChessRepertoire.Model.Piece;
+﻿using System.Windows.Input;
+using DynamicData;
+using DynamicData.Cache;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -21,7 +16,6 @@ public enum CastlingRights {
 }
 
 public class ChessBoard : ReactiveObject {
-    private readonly ChessPiece?[,] _board;
     private Square? _enPassantTargetSquare;
     private CastlingRights _castlingRights;
 
@@ -38,6 +32,8 @@ public class ChessBoard : ReactiveObject {
     [Reactive]
     public int FullMoveNumber { get; private set; }
 
+    public readonly SourceCache<ChessPiece, Square> Pieces = new(p => p.Square);
+
     public Square? EnPassantTargetSquare => _enPassantTargetSquare;
 
     public CastlingRights CastlingRights => _castlingRights;
@@ -45,9 +41,7 @@ public class ChessBoard : ReactiveObject {
     public ICommand MoveCommand { get; }
 
     public ChessBoard(string position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-        MoveCommand = ReactiveCommand.Create<Move, bool>(move => MakeMove(move));
-
-        _board = new ChessPiece[8, 8];
+        MoveCommand = ReactiveCommand.Create<Move, bool>(MakeMove);
 
         var components = position.Split(' ');
 
@@ -64,29 +58,32 @@ public class ChessBoard : ReactiveObject {
         if (ranks.Length != 8)
             throw new IllegalFenException($"The format must describe 8 ranks, got {ranks.Length} instead.");
 
-        for (var rank = 0; rank < 8; rank++) {
-            var rankString = ranks[rank];
+        Pieces.Edit(innerCache => {
+            for (var rank = 0; rank < 8; rank++) {
+                var rankString = ranks[rank];
 
-            for (var file = 0; file < 8; file++) {
-                var piece = rankString[file];
+                for (var file = 0; file < 8; file++) {
+                    var piece = rankString[file];
 
-                if (piece is >= '1' and <= '8') {
-                    file += piece - '0' - 1;
-                    continue;
+                    if (piece is >= '1' and <= '8') {
+                        file += piece - '0' - 1;
+                        continue;
+                    }
+
+                    var color = char.IsUpper(piece) ? Color.White : Color.Black;
+                    var pieceType = char.ToLower(piece) switch {
+                        'p' => PieceType.Pawn,
+                        'n' => PieceType.Knight,
+                        'b' => PieceType.Bishop,
+                        'r' => PieceType.Rook,
+                        'q' => PieceType.Queen,
+                        'k' => PieceType.King,
+                        _ => throw new IllegalFenException($"Piece type must be one of p, n, b, r, q, k, instead is {piece}")
+                    };
+                    innerCache.AddOrUpdate(new ChessPiece(color, pieceType, new Square(file, rank)));
                 }
-
-                var color = char.IsUpper(piece) ? Color.White : Color.Black;
-                _board[file, rank] = char.ToLower(piece) switch {
-                    'p' => new Pawn(color),
-                    'n' => new Knight(color),
-                    'b' => new Bishop(color),
-                    'r' => new Rook(color),
-                    'q' => new Queen(color),
-                    'k' => new King(color),
-                    _ => throw new IllegalFenException($"Piece type must be one of p, n, b, r, q, k, instead is {piece}")
-                };
             }
-        }
+        });
 
         CurrentTurn = components[1] == "w" ? Color.White : (components[1] == "b" ? Color.Black : throw new IllegalFenException($"Piece color must be either black or white, instead is {components[1]}"));
 
@@ -104,7 +101,7 @@ public class ChessBoard : ReactiveObject {
         if (enPassantTargetSquare != "-") {
             var file = enPassantTargetSquare[0] - 'a';
             var rank = enPassantTargetSquare[1] - '1';
-            _enPassantTargetSquare = new Square { File = file, Rank = rank };
+            _enPassantTargetSquare = new Square(file, rank);
         }
 
         try {
@@ -144,17 +141,12 @@ public class ChessBoard : ReactiveObject {
     }
 
     private void MakeLegalNonNullMove(Move move) {
-        var piece = _board[move.From.File, move.From.Rank];
-        _board[move.From.File, move.From.Rank] = null;
-        _board[move.To.File, move.To.Rank] = move.PromotedPiece ?? piece;
+
     }
 
     public void UndoMove() {
         _moves.Pop();
     }
-}
-
-public class IllegalMoveException : Exception {
 }
 
 public class IllegalFenException : Exception {
@@ -163,17 +155,3 @@ public class IllegalFenException : Exception {
 
     public IllegalFenException(string message, Exception innerException) : base(message, innerException) { }
 }
-
-
-public record Square {
-    public int File { get; set; }
-    public int Rank { get; set; }
-}
-
-public record Move {
-    public Square From { get; }
-    public Square To { get; }
-
-    public ChessPiece? PromotedPiece { get; }
-}
-
