@@ -22,6 +22,12 @@ namespace ChessRepertoire.View {
     public partial class MainWindow : ReactiveWindow<AppViewModel> {
         public MainWindow() {
             InitializeComponent();
+
+            ViewModel = new AppViewModel();
+
+            this.WhenActivated(d => {
+                d(this.BindCommand(ViewModel, vm => vm.LoadVariationGraphCommand, view => view.NewMenuItem));
+            });
         }
     }
 }

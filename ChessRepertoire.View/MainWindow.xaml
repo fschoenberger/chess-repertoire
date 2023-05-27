@@ -7,9 +7,26 @@
                            xmlns:reactiveUi="http://reactiveui.net"
                            xmlns:viewModel="clr-namespace:ChessRepertoire.ViewModel;assembly=ChessRepertoire.ViewModel"
                            xmlns:board="clr-namespace:ChessRepertoire.View.Wpf.Control.Board"
+                           xmlns:evalBar="clr-namespace:ChessRepertoire.View.Wpf.Control.EvaluationBar"
                            mc:Ignorable="d"
                            Title="MainWindow" Height="450" Width="800">
     <DockPanel>
-        <board:ChessBoard />
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="New" x:Name="NewMenuItem"/>
+                <MenuItem Header="Open" />
+                <MenuItem Header="Save" />
+            </MenuItem>
+            <MenuItem Header="Edit">
+                <MenuItem Header="Cut" />
+                <MenuItem Header="Copy" />
+                <MenuItem Header="Paste" />
+            </MenuItem>
+        </Menu>
+        <StackPanel Orientation="Horizontal" Margin="10">
+            <StackPanel></StackPanel>
+            <evalBar:EvaluationBar Width="20px" Margin="8 0"/>
+            <board:ChessBoard />
+        </StackPanel>
     </DockPanel>
 </reactiveUi:ReactiveWindow>

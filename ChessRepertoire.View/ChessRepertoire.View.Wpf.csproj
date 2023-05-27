@@ -21,4 +21,8 @@
     <ProjectReference Include="..\ChessRepertoire.ViewModel\ChessRepertoire.ViewModel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Control\MoveExplorer\" />
+  </ItemGroup>
+
 </Project>
