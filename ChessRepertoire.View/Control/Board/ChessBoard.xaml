@@ -12,84 +12,100 @@
                                 mc:Ignorable="d" 
                                 d:DesignHeight="400" d:DesignWidth="400" d:DataContext="{d:DesignInstance board:DesignTimeBoardViewModel, IsDesignTimeCreatable=True}">
     <StackPanel Orientation="Horizontal">
-    <Viewbox>
-        <Canvas Width="8" Height="8">
-            <ItemsControl Name="Fields" ItemsSource="{Binding Fields}">
-                <ItemsControl.Resources>
-                    <converter:FieldBrushConverter x:Key="FieldBrushConverter" />
-                </ItemsControl.Resources>
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas Width="8" Height="8" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ContentPresenter">
-                        <Setter Property="Width" Value="1" />
-                        <Setter Property="Height" Value="1" />
-                        <Setter Property="Canvas.Bottom" Value="{Binding (board:IFieldViewModel.Row)}" />
-                        <Setter Property="Canvas.Left" Value="{Binding (board:IFieldViewModel.Column)}" />
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="board:IFieldViewModel">
-                        <Border>
-                            <Border.Background>
-                                <MultiBinding Converter="{StaticResource FieldBrushConverter}" Mode="OneTime">
-                                    <Binding Path="(board:IFieldViewModel.Row)" />
-                                    <Binding Path="(board:IFieldViewModel.Column)" />
-                                </MultiBinding>
-                            </Border.Background>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+        <Viewbox>
+            <Viewbox.Resources>
+                <converter:OrientationCoordinateConverter x:Key="OrientationCoordinateConverter" />
+                <RelativeSource x:Key="Parent" Mode="FindAncestor" AncestorType="{x:Type local:ChessBoard}" />
+            </Viewbox.Resources>
+            <Canvas Width="8" Height="8">
+                <ItemsControl Name="Fields" ItemsSource="{Binding Fields}">
+                    <ItemsControl.Resources>
+                        <converter:FieldBrushConverter x:Key="FieldBrushConverter" />
+                    </ItemsControl.Resources>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas Width="8" Height="8" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Width" Value="1" />
+                            <Setter Property="Height" Value="1" />
+                            <Setter Property="Canvas.Bottom">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
+                                        <Binding Path="(board:IFieldViewModel.Rank)" />
+                                        <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Canvas.Left">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
+                                        <Binding Path="(board:IFieldViewModel.File)" />
+                                        <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="board:IFieldViewModel">
+                            <Border>
+                                <Border.Background>
+                                    <MultiBinding Converter="{StaticResource FieldBrushConverter}" Mode="OneTime">
+                                        <Binding Path="(board:IFieldViewModel.Rank)" />
+                                        <Binding Path="(board:IFieldViewModel.File)" />
+                                    </MultiBinding>
+                                </Border.Background>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-            <ItemsControl Name="Pieces" ItemsSource="{Binding Pieces}">
-                <ItemsControl.Resources>
-                    <selector:PieceIconSelector x:Key="IconSelector" />
-                    <converter:OrientationCoordinateConverter x:Key="OrientationCoordinateConverter" />
-                    <RelativeSource x:Key="Parent" Mode="FindAncestor" AncestorType="{x:Type local:ChessBoard}" />
-                </ItemsControl.Resources>
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas Width="8" Height="8" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ContentPresenter">
-                        <Setter Property="Width" Value="1" />
-                        <Setter Property="Height" Value="1" />
-                        <Setter Property="Canvas.Bottom">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
-                                    <Binding Path="(board:IPieceViewModel.Rank)" />
-                                    <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="Canvas.Left">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
-                                    <Binding Path="(board:IPieceViewModel.File)" />
-                                    <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ContentControl Content="{Binding}">
-                            <ContentControl.ContentTemplateSelector>
-                                <StaticResource ResourceKey="IconSelector" />
-                            </ContentControl.ContentTemplateSelector>
-                        </ContentControl>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Canvas>
-    </Viewbox>
+                <ItemsControl Name="Pieces" ItemsSource="{Binding Pieces}">
+                    <ItemsControl.Resources>
+                        <selector:PieceIconSelector x:Key="IconSelector" />
+                    </ItemsControl.Resources>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas Width="8" Height="8" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Width" Value="1" />
+                            <Setter Property="Height" Value="1" />
+                            <Setter Property="Canvas.Bottom">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
+                                        <Binding Path="(board:IPieceViewModel.Rank)" />
+                                        <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Canvas.Left">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{StaticResource OrientationCoordinateConverter}" Mode="OneWay">
+                                        <Binding Path="(board:IPieceViewModel.File)" />
+                                        <Binding Path="ViewModel.Orientation" RelativeSource="{StaticResource Parent}" />
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="{Binding}">
+                                <ContentControl.ContentTemplateSelector>
+                                    <StaticResource ResourceKey="IconSelector" />
+                                </ContentControl.ContentTemplateSelector>
+                            </ContentControl>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Canvas>
+        </Viewbox>
         <Button x:Name="FlipButton">Flip!</Button>
     </StackPanel>
 </reactiveUi:ReactiveUserControl>
