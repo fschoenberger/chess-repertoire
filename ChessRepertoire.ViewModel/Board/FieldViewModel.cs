@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
 namespace ChessRepertoire.ViewModel.Board {
     internal class FieldViewModel : IFieldViewModel
     {
-        public int Row { get; set; }
-        public int Column { get; set; }
+        public int Rank { get; set; }
+
+        public int File { get; set; }
+
+        //[Reactive] public bool IsTarget { get; set; } = false;
     }
 }

@@ -35,6 +35,9 @@ namespace ChessRepertoire.ViewModel.Board {
 
         public ICommand FlipBoard { get; }
 
+        [Reactive]
+        public IPieceViewModel? SelectedPiece { get; set; }
+
         public BoardViewModel() {
             _board = new ChessBoard();
 
@@ -42,7 +45,7 @@ namespace ChessRepertoire.ViewModel.Board {
 
             for (var i = 0; i < 8; ++i) {
                 for (var j = 0; j < 8; ++j) {
-                    _fields[i, j] = new FieldViewModel { Row = i, Column = j };
+                    _fields[i, j] = new FieldViewModel { Rank = i, File = j };
                 }
             }
 
@@ -51,7 +54,7 @@ namespace ChessRepertoire.ViewModel.Board {
             });
 
             _board.Pieces.Connect()
-                .Transform(p => (IPieceViewModel) new PieceViewModel(p))
+                .Transform(p => (IPieceViewModel)new PieceViewModel(p))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _pieces)
                 .Subscribe();

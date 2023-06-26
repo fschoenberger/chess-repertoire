@@ -14,7 +14,7 @@ namespace ChessRepertoire.ViewModel.Board {
             get {
                 for (int i = 0; i < 8; ++i)
                     for (int j = 0; j < 8; ++j)
-                        yield return new FieldViewModel { Row = i, Column = j };
+                        yield return new FieldViewModel { Rank = i, File = j };
             }
         }
 
