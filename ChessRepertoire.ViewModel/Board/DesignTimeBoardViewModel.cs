@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ChessRepertoire.Model.Board;
+using ChessRepertoire.ViewModel.Util;
 using ReactiveUI;
 
 namespace ChessRepertoire.ViewModel.Board {
@@ -34,10 +35,10 @@ namespace ChessRepertoire.ViewModel.Board {
 
         public Color Orientation { get; set; } = Color.Black;
 
-        public ICommand FlipBoard { get; }
+        public ICommand FlipBoard { get; } = new NullCommand();
 
-        public ICommand SelectField { get; }
+        public ICommand SelectField { get; } = new NullCommand();
 
-        public ICommand SelectPiece { get; }
+        public ICommand SelectPiece { get; } = new NullCommand();
     }
 }
