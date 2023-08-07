@@ -52,7 +52,8 @@ namespace ChessRepertoire.ViewModel.Board
         public BoardViewModel()
         {
             IChessBoardRepository boardRepository = new FenRepository();
-            _board = boardRepository.FromFen(ChessBoard.InitialPositionFen);
+            //_board = boardRepository.FromFen(ChessBoard.InitialPositionFen);
+            _board = boardRepository.FromFen("r3k3/pppppppp/8/8/8/8/PPP1PrPP/R2NK2R w KQq - 0 1");
 
             _fields = new IFieldViewModel[8, 8];
 
@@ -108,6 +109,10 @@ namespace ChessRepertoire.ViewModel.Board
             Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
 
             if (piece.Color == _board.CurrentTurn) {
+                //if (SelectedPiece is { Type: PieceType.King } && piece.Type == PieceType.Rook) {
+
+                //}
+
                 SelectedPiece = piece;
                 return;
             }

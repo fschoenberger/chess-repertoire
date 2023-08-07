@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 using DynamicData;
@@ -199,6 +200,23 @@ public class ChessBoard : ReactiveObject
         return pieces.Values.Where(p => p.Color == color && CanMoveTo(p, square, pieces));
     }
 
+    private CastlingRights KingMovementToCastlingRights(Color color, int file)
+    {
+        return (color, file) switch
+        {
+            (Color.White, 2) => CastlingRights.WhiteQueenSide,
+            (Color.White, 6) => CastlingRights.WhiteKingSide,
+            (Color.Black, 2) => CastlingRights.BlackQueenSide,
+            (Color.Black, 6) => CastlingRights.BlackKingSide,
+            _ => throw new Exception("This should never happen!")
+        };
+    }
+
+    private bool IsCastlingMove(ChessPiece piece, Move move)
+    {
+        return piece is { Type: PieceType.King, Square.File: 4, Square.Rank: 0 or 7 } && move.To.File is 6 or 2;
+    }
+
     public bool IsGameFinished()
     {
         return false;
@@ -206,8 +224,6 @@ public class ChessBoard : ReactiveObject
 
     private bool IsLegalMove(Move? move)
     {
-        //TODO: This still needs to account for en passant captures and castling.
-
         if (IsGameFinished())
         {
             _logger?.LogDebug("Move is not legal because the game has already ended.");
@@ -244,6 +260,58 @@ public class ChessBoard : ReactiveObject
         {
             _logger?.LogDebug("Move is not legal because the piece on the from square has the wrong color.");
             return false;
+        }
+
+        // The player wants to castle
+        if (IsCastlingMove(piece, move))
+        {
+            var mayCastle = KingMovementToCastlingRights(piece.Color, move.To.File);
+
+            if ((CastlingRights & mayCastle) == 0)
+            {
+                _logger?.LogDebug("May not castle {}!", mayCastle);
+                return false;
+            }
+
+            var squares = new List<Square>();
+
+            switch (mayCastle)
+            {
+                case CastlingRights.WhiteQueenSide:
+                    squares.Add(new Square(2, 0));
+                    squares.Add(new Square(3, 0));
+
+                    break;
+                case CastlingRights.BlackQueenSide:
+                    squares.Add(new Square(2, 7));
+                    squares.Add(new Square(3, 7));
+
+                    break;
+                case CastlingRights.WhiteKingSide:
+                    squares.Add(new Square(5, 0));
+                    squares.Add(new Square(6, 0));
+
+                    break;
+                case CastlingRights.BlackKingSide:
+                    squares.Add(new Square(5, 0));
+                    squares.Add(new Square(6, 0));
+
+                    break;
+            }
+
+            if (!UnobstructedPathExists(move.From, move.To, Pieces.Items.ToDictionary(x => x.Square)))
+            {
+                _logger?.LogDebug("Castling is not legal because the path is obstructed.");
+                return false;
+            }
+
+
+            if (squares.Any(v => GetAttackers(v, CurrentTurn.Flipped()).Any()))
+            {
+                _logger?.LogDebug("Can't castle because castling would require moving through check.");
+            }
+
+            return true;
         }
 
         if (!CanMoveTo(piece, move.To))
@@ -301,6 +369,64 @@ public class ChessBoard : ReactiveObject
     private void MakeLegalNonNullMove(Move move)
     {
         var piece = Pieces.Lookup(move.From).Value!;
+        var capturedPiece = Pieces.Lookup(move.To);
+        var isCastlingMove = IsCastlingMove(piece, move);
+
+        if (piece.Type == PieceType.King && !isCastlingMove) {
+            if (piece.Color == Color.White) {
+                _castlingRights &= ~(CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide);
+                _logger?.LogDebug("White lost all castling rights because they moved their king.");
+            } else if (piece.Color == Color.Black) {
+                _castlingRights &= ~(CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide);
+                _logger?.LogDebug("White lost all castling rights because they moved their king.");
+            }
+        }
+
+        if (piece.Type == PieceType.Rook)
+        {
+            switch (move.From)
+            {
+                case { File: 0, Rank: 0 }:
+                    _castlingRights &= ~CastlingRights.WhiteQueenSide;
+                    _logger?.LogDebug("White lost queenside castling rights because they moved their rook from the starting position.");
+                    break;
+                case { File: 7, Rank: 0 }:
+                    _castlingRights &= ~CastlingRights.WhiteKingSide;
+                    _logger?.LogDebug("White lost kingside castling rights because they moved their rook from the starting position.");
+                    break;
+                case { File: 0, Rank: 7 }:
+                    _castlingRights &= ~CastlingRights.BlackQueenSide;
+                    _logger?.LogDebug("Black lost queenside castling rights because they moved their rook from the starting position.");
+                    break;
+                case { File: 7, Rank: 7 }:
+                    _castlingRights &= ~CastlingRights.BlackKingSide;
+                    _logger?.LogDebug("Black lost kingside castling rights because they moved their rook from the starting position.");
+                    break;
+            }
+        }
+
+        if (capturedPiece.HasValue && capturedPiece.Value.Type == PieceType.Rook)
+        {
+            switch (move.To)
+            {
+                case { File: 0, Rank: 0 }:
+                    _castlingRights &= ~CastlingRights.WhiteQueenSide;
+                    _logger?.LogDebug("White lost queenside castling rights because their rook was captured.");
+                    break;
+                case { File: 7, Rank: 0 }:
+                    _castlingRights &= ~CastlingRights.WhiteKingSide;
+                    _logger?.LogDebug("White lost kingside castling rights because their rook was captured.");
+                    break;
+                case { File: 0, Rank: 7 }:
+                    _castlingRights &= ~CastlingRights.BlackQueenSide;
+                    _logger?.LogDebug("White lost queenside castling rights because their rook was captured.");
+                    break;
+                case { File: 7, Rank: 7 }:
+                    _castlingRights &= ~CastlingRights.BlackKingSide;
+                    _logger?.LogDebug("White lost kingside castling rights because their rook was captured.");
+                    break;
+            }
+        }
 
         Pieces.Edit(a =>
         {
@@ -311,13 +437,43 @@ public class ChessBoard : ReactiveObject
             {
                 a.Remove(move.To with { Rank = move.From.Rank });
             }
-        });
 
-        _enPassantTargetSquare = null;
+            if (isCastlingMove)
+            {
+                // We know it's a legal move so no validation necessary
+                switch (KingMovementToCastlingRights(piece.Color, move.To.File))
+                {
+                    case CastlingRights.WhiteKingSide:
+                        a.Remove(new Square(7, 0));
+                        a.AddOrUpdate(new ChessPiece(Color.White, PieceType.Rook, new Square(5, 0)));
+                        _castlingRights &= ~(CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide);
+                        break;
+
+                    case CastlingRights.WhiteQueenSide:
+                        a.Remove(new Square(0, 0));
+                        a.AddOrUpdate(new ChessPiece(Color.White, PieceType.Rook, new Square(3, 0)));
+                        _castlingRights &= ~(CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide);
+                        break;
+
+                    case CastlingRights.BlackKingSide:
+                        a.Remove(new Square(7, 7));
+                        a.AddOrUpdate(new ChessPiece(Color.Black, PieceType.Rook, new Square(5, 7)));
+                        _castlingRights &= ~(CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide);
+                        break;
+
+                    case CastlingRights.BlackQueenSide:
+                        a.Remove(new Square(0, 7));
+                        a.AddOrUpdate(new ChessPiece(Color.Black, PieceType.Rook, new Square(3, 7)));
+                        _castlingRights &= ~(CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide);
+                        break;
+                }
+            }
+        });
 
         _logger?.LogDebug("Moved {} to {}.", piece, move.To);
         _moves.Push(move);
 
+        _enPassantTargetSquare = null;
         if (piece.Type == PieceType.Pawn && Math.Abs(move.From.Rank - move.To.Rank) == 2)
         {
             _enPassantTargetSquare = move.From with { Rank = move.From.Rank + (CurrentTurn == Color.White ? 1 : -1) };
