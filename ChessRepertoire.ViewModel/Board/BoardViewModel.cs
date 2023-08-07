@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -35,6 +36,10 @@ namespace ChessRepertoire.ViewModel.Board {
 
         public ICommand FlipBoard { get; }
 
+        public ICommand SelectField { get; }
+
+        public ICommand SelectPiece { get; }
+
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
@@ -51,6 +56,14 @@ namespace ChessRepertoire.ViewModel.Board {
 
             FlipBoard = ReactiveCommand.Create(() => {
                 Orientation = Orientation == Color.Black ? Color.White : Color.Black;
+            });
+
+            SelectField = ReactiveCommand.Create((IFieldViewModel field) => {
+                Debug.WriteLine($"Click on {(char)('A' + field.File)}{field.Rank + 1}");
+            });
+
+            SelectPiece = ReactiveCommand.Create((IPieceViewModel piece) => {
+                Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
             });
 
             _board.Pieces.Connect()

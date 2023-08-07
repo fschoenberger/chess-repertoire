@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using ChessRepertoire.ViewModel.Board;
 using ReactiveMarbles.ObservableEvents;
 using System.Windows.Controls;
@@ -31,19 +32,19 @@ namespace ChessRepertoire.View.Wpf.Control.Board
 
                 this.BindCommand(ViewModel, vm => vm.FlipBoard, v => v.FlipButton).DisposeWith(d);
 
-                Fields.Events().MouseDown.Subscribe((e) => {
-                    if (e.OriginalSource is Border { DataContext: IFieldViewModel field })
-                    {
-                        Debug.WriteLine($"Click on {(char)('A' + field.File)}{field.Rank + 1}");
-                    }
-                }).DisposeWith(d);
+                Fields.Events().MouseDown
+                    .Where(e => e.OriginalSource is Border { DataContext: IFieldViewModel field })
+                    .Select(e => ((Border)e.OriginalSource).DataContext as IFieldViewModel)
+                    .WhereNotNull()
+                    .InvokeCommand(ViewModel, vm => vm.SelectField)
+                    .DisposeWith(d);
 
-                Pieces.Events().MouseDown.Subscribe((e) => {
-                    if (e.OriginalSource is Path { DataContext: IPieceViewModel piece })
-                    {
-                        Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
-                    }
-                }).DisposeWith(d);
+                Pieces.Events().MouseDown
+                    .Where(e => e.OriginalSource is Path { DataContext: IPieceViewModel piece })
+                    .Select(e => ((Path)e.OriginalSource).DataContext as IPieceViewModel)
+                    .WhereNotNull()
+                    .InvokeCommand(ViewModel, vm => vm.SelectPiece)
+                    .DisposeWith(d);
             });
         }
     }

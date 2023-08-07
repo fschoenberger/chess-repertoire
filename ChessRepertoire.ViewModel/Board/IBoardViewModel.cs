@@ -14,4 +14,8 @@ public interface IBoardViewModel : IReactiveObject
     public Color Orientation { get; set; }
 
     public ICommand FlipBoard { get; }
+
+    public ICommand SelectField { get; }
+
+    public ICommand SelectPiece { get; }
 }
