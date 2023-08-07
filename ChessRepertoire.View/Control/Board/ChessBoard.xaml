@@ -17,7 +17,7 @@
                 <converter:OrientationCoordinateConverter x:Key="OrientationCoordinateConverter" />
                 <RelativeSource x:Key="Parent" Mode="FindAncestor" AncestorType="{x:Type local:ChessBoard}" />
             </Viewbox.Resources>
-            <Canvas Width="8" Height="8">
+            <Canvas Width="8" Height="8" x:Name="Board">
                 <ItemsControl Name="Fields" ItemsSource="{Binding Fields}">
                     <ItemsControl.Resources>
                         <converter:FieldBrushConverter x:Key="FieldBrushConverter" />
