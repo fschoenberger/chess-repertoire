@@ -258,7 +258,9 @@ public class ChessBoard : ReactiveObject
             return false;
         }
 
+
         var king = Pieces.Items.First(p => p.Color == CurrentTurn && p.Type == PieceType.King);
+        var kingSquare = king.Square == move.From ? move.To : king.Square;
 
         // Figure out if moving this piece would put the king in check or if the king currently is in check
         // First, we make the move and get all pieces. Next, we check if there are any attackers on the king.
@@ -266,7 +268,7 @@ public class ChessBoard : ReactiveObject
         boardPieces.Remove(move.From);
         boardPieces[move.To] = piece with { Square = move.To };
 
-        var checkingPieces = GetAttackers(king.Square, CurrentTurn.Flipped(), boardPieces).ToList();
+        var checkingPieces = GetAttackers(kingSquare, CurrentTurn.Flipped(), boardPieces).ToList();
         if (checkingPieces.Any())
         {
             var str = checkingPieces.Aggregate("", (acc, p) => acc + p.ToString() + ", ");
