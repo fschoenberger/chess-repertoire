@@ -433,6 +433,11 @@ public class ChessBoard : ReactiveObject
             a.Remove(move.From);
             a.AddOrUpdate(piece with { Square = move.To });
 
+            if (piece.Type == PieceType.Pawn && move.To.Rank is 0 or 7) {
+                Debug.Assert(move.PromotedPiece != null);
+                a.AddOrUpdate(move.PromotedPiece with { Square = move.To });
+            }
+
             if (move.To == EnPassantTargetSquare)
             {
                 a.Remove(move.To with { Rank = move.From.Rank });

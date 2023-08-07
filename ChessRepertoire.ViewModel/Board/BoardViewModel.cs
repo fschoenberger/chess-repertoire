@@ -127,11 +127,16 @@ namespace ChessRepertoire.ViewModel.Board
             if (SelectedPiece == null)
                 return;
 
-            // TODO: We need to deal with promotions here
+            // TODO: We need to deal with promotions here properly instead of auto-promoting
+            ChessPiece? promotion = null;
+            if (targetRank is 0 or 7 && SelectedPiece.Type == PieceType.Pawn) {
+                promotion = new ChessPiece(SelectedPiece.Color, PieceType.Queen, new Square(targetFile, targetRank));
+            }
 
             var move = new Move(
                 new Square(SelectedPiece.File, SelectedPiece.Rank),
-                new Square(targetFile, targetRank)
+                new Square(targetFile, targetRank),
+                promotion
             );
 
             if (_board.MakeMove(move))
