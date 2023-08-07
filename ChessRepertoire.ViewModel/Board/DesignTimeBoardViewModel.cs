@@ -35,10 +35,10 @@ namespace ChessRepertoire.ViewModel.Board {
 
         public Color Orientation { get; set; } = Color.Black;
 
-        public ICommand FlipBoard { get; } = new NullCommand();
+        public ICommand FlipBoardCommand { get; } = new NullCommand();
 
-        public ICommand SelectField { get; } = new NullCommand();
+        public ICommand SelectFieldCommand { get; } = new NullCommand();
 
-        public ICommand SelectPiece { get; } = new NullCommand();
+        public ICommand SelectPieceCommand { get; } = new NullCommand();
     }
 }

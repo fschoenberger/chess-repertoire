@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Diagnostics;
+using System.Windows.Input;
 using DynamicData;
 using DynamicData.Cache;
 using ReactiveUI;
@@ -141,7 +142,18 @@ public class ChessBoard : ReactiveObject {
     }
 
     private void MakeLegalNonNullMove(Move move) {
+        var piece = Pieces.Lookup(move.From);
+        if (!piece.HasValue)
+            throw new InvalidOperationException("A legal move turns out to be illegal!");
 
+        Pieces.Edit(a => {
+            a.Remove(move.From);
+            a.AddOrUpdate(piece.Value with { Square = move.To });
+        });
+
+        Debug.WriteLine($"Moved {piece.Value.Color} {piece.Value.Type} from {(char)('A' + move.From.File)}{move.From.Rank + 1} to {(char)('A' + move.To.File)}{move.To.Rank + 1}.");
+
+        _moves.Push(move);
     }
 
     public void UndoMove() {

@@ -9,14 +9,19 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using ChessRepertoire.Model.Board;
 using DynamicData;
+using DynamicData.Kernel;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace ChessRepertoire.ViewModel.Board {
-    public class BoardViewModel : ReactiveObject, IBoardViewModel {
+namespace ChessRepertoire.ViewModel.Board
+{
+    public class BoardViewModel : ReactiveObject, IBoardViewModel
+    {
         private readonly IFieldViewModel[,] _fields;
-        public IEnumerable<IFieldViewModel> Fields {
-            get {
+        public IEnumerable<IFieldViewModel> Fields
+        {
+            get
+            {
                 var rowCount = _fields.GetLength(0);
                 var columnCount = _fields.GetLength(1);
 
@@ -34,43 +39,85 @@ namespace ChessRepertoire.ViewModel.Board {
 
         [Reactive] public Color Orientation { get; set; } = Color.Black;
 
-        public ICommand FlipBoard { get; }
+        public ICommand FlipBoardCommand { get; }
 
-        public ICommand SelectField { get; }
+        public ICommand SelectFieldCommand { get; }
 
-        public ICommand SelectPiece { get; }
+        public ICommand SelectPieceCommand { get; }
 
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
-        public BoardViewModel() {
+        public BoardViewModel()
+        {
             _board = new ChessBoard();
 
             _fields = new IFieldViewModel[8, 8];
 
-            for (var i = 0; i < 8; ++i) {
-                for (var j = 0; j < 8; ++j) {
+            for (var i = 0; i < 8; ++i)
+            {
+                for (var j = 0; j < 8; ++j)
+                {
                     _fields[i, j] = new FieldViewModel { Rank = i, File = j };
                 }
             }
 
-            FlipBoard = ReactiveCommand.Create(() => {
+            FlipBoardCommand = ReactiveCommand.Create(() =>
+            {
                 Orientation = Orientation == Color.Black ? Color.White : Color.Black;
             });
 
-            SelectField = ReactiveCommand.Create((IFieldViewModel field) => {
-                Debug.WriteLine($"Click on {(char)('A' + field.File)}{field.Rank + 1}");
-            });
+            SelectFieldCommand = ReactiveCommand.Create((IFieldViewModel field) => SelectField(field));
 
-            SelectPiece = ReactiveCommand.Create((IPieceViewModel piece) => {
-                Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
-            });
+            SelectPieceCommand = ReactiveCommand.Create((IPieceViewModel piece) => SelectPiece(piece));
 
             _board.Pieces.Connect()
                 .Transform(p => (IPieceViewModel)new PieceViewModel(p))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _pieces)
                 .Subscribe();
+
+        }
+
+        private void SelectField(IFieldViewModel field)
+        {
+            Debug.WriteLine($"Click on {(char)('A' + field.File)}{field.Rank + 1}");
+
+            var rank = field.Rank;
+            var file = field.File;
+
+            // Figure out if there is a piece at this position
+            var piece = Pieces.FirstOrOptional(p => p.Rank == rank && p.File == file);
+            if (piece.HasValue)
+            {
+                SelectPiece(piece.Value);
+                return;
+            }
+
+            // Otherwise the user wants to move the piece to the selected field
+            if (SelectedPiece == null)
+                return;
+
+            // TODO: We need to deal with promotions here
+            var move = new Move(
+                new Square(SelectedPiece.File, SelectedPiece.Rank),
+                new Square(file, rank)
+            );
+
+            _board.MakeMove(move);
+        }
+
+        private void SelectPiece(IPieceViewModel piece)
+        {
+            Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
+
+            // BUG: This is just a placeholder
+            SelectedPiece = piece;
+
+            // First we check if the user clicked on a piece with the same color,
+            // because then we can change the selection.
+
+            // Otherwise the user wants to capture the clicked piece.
         }
     }
 }

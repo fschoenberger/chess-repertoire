@@ -30,20 +30,20 @@ namespace ChessRepertoire.View.Wpf.Control.Board
                         view => view.Pieces.ItemsSource)
                     .DisposeWith(d);
 
-                this.BindCommand(ViewModel, vm => vm.FlipBoard, v => v.FlipButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.FlipBoardCommand, v => v.FlipButton).DisposeWith(d);
 
                 Fields.Events().MouseDown
                     .Where(e => e.OriginalSource is Border { DataContext: IFieldViewModel field })
                     .Select(e => ((Border)e.OriginalSource).DataContext as IFieldViewModel)
                     .WhereNotNull()
-                    .InvokeCommand(ViewModel, vm => vm.SelectField)
+                    .InvokeCommand(ViewModel, vm => vm.SelectFieldCommand)
                     .DisposeWith(d);
 
                 Pieces.Events().MouseDown
                     .Where(e => e.OriginalSource is Path { DataContext: IPieceViewModel piece })
                     .Select(e => ((Path)e.OriginalSource).DataContext as IPieceViewModel)
                     .WhereNotNull()
-                    .InvokeCommand(ViewModel, vm => vm.SelectPiece)
+                    .InvokeCommand(ViewModel, vm => vm.SelectPieceCommand)
                     .DisposeWith(d);
             });
         }
