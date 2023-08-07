@@ -93,7 +93,7 @@ public class ChessBoard : ReactiveObject
             if (target.File != piece.Square.File)
             {
                 // Pawns may only capture diagonally, so we check if there's something to capture
-                return pieces.ContainsKey(target);
+                return target == EnPassantTargetSquare || pieces.ContainsKey(target);
             }
 
             // Pawns can't capture pieces in front of them, so we if they move forward there can't be anything in the way
@@ -258,7 +258,6 @@ public class ChessBoard : ReactiveObject
             return false;
         }
 
-
         var king = Pieces.Items.First(p => p.Color == CurrentTurn && p.Type == PieceType.King);
         var kingSquare = king.Square == move.From ? move.To : king.Square;
 
@@ -301,19 +300,28 @@ public class ChessBoard : ReactiveObject
 
     private void MakeLegalNonNullMove(Move move)
     {
-        var piece = Pieces.Lookup(move.From);
-        if (!piece.HasValue)
-            throw new InvalidOperationException("A legal move turns out to be illegal!");
+        var piece = Pieces.Lookup(move.From).Value!;
 
         Pieces.Edit(a =>
         {
             a.Remove(move.From);
-            a.AddOrUpdate(piece.Value with { Square = move.To });
+            a.AddOrUpdate(piece with { Square = move.To });
+
+            if (move.To == EnPassantTargetSquare)
+            {
+                a.Remove(move.To with { Rank = move.From.Rank });
+            }
         });
 
-        Debug.WriteLine($"Moved {piece.Value.Color} {piece.Value.Type} from {(char)('A' + move.From.File)}{move.From.Rank + 1} to {(char)('A' + move.To.File)}{move.To.Rank + 1}.");
+        _enPassantTargetSquare = null;
 
+        _logger?.LogDebug("Moved {} to {}.", piece, move.To);
         _moves.Push(move);
+
+        if (piece.Type == PieceType.Pawn && Math.Abs(move.From.Rank - move.To.Rank) == 2)
+        {
+            _enPassantTargetSquare = move.From with { Rank = move.From.Rank + (CurrentTurn == Color.White ? 1 : -1) };
+        }
     }
 
     public void UndoMove()
