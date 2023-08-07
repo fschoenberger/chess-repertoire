@@ -104,7 +104,9 @@ namespace ChessRepertoire.ViewModel.Board
                 new Square(file, rank)
             );
 
-            _board.MakeMove(move);
+            if (_board.MakeMove(move)) {
+                SelectedPiece = null;
+            }
         }
 
         private void SelectPiece(IPieceViewModel piece)
