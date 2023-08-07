@@ -19,7 +19,6 @@ namespace ChessRepertoire.ViewModel.Util
 
         }
 
-
         public event EventHandler CanExecuteChanged
         {
             add { }
