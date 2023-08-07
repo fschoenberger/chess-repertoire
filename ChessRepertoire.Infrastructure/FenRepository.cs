@@ -32,13 +32,12 @@ namespace ChessRepertoire.Infrastructure
             {
                 var rankString = ranks[rank];
 
-                for (var file = 0; file < 8; file++)
+                var file = 0;
+                foreach (var piece in rankString)
                 {
-                    var piece = rankString[file];
-
                     if (piece is >= '1' and <= '8')
                     {
-                        file += piece - '0' - 1;
+                        file += piece - '0';
                         continue;
                     }
 
@@ -54,6 +53,8 @@ namespace ChessRepertoire.Infrastructure
                         _ => throw new IllegalFenException($"Piece type must be one of p, n, b, r, q, k, instead is {piece}")
                     };
                     pieces.Add(new ChessPiece(color, pieceType, new Square(file, rank)));
+
+                    file++;
                 }
             }
 
