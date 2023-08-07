@@ -85,8 +85,24 @@ public class ChessBoard : ReactiveObject
 
     private bool CanMoveTo(ChessPiece piece, Square target, IDictionary<Square, ChessPiece> pieces)
     {
-        var ret = piece.CanMoveTo(target) && (piece.Type == PieceType.Knight || UnobstructedPathExists(piece.Square, target, pieces));
-        return ret;
+        if (!piece.CanMoveTo(target))
+            return false;
+
+        if (piece.Type == PieceType.Pawn)
+        {
+            if (target.File != piece.Square.File)
+            {
+                // Pawns may only capture diagonally, so we check if there's something to capture
+                return pieces.ContainsKey(target);
+            }
+
+            // Pawns can't capture pieces in front of them, so we if they move forward there can't be anything in the way
+            return !pieces.ContainsKey(target);
+
+        }
+
+
+        return (piece.Type == PieceType.Knight || UnobstructedPathExists(piece.Square, target, pieces));
     }
 
     /// <summary>
@@ -190,6 +206,8 @@ public class ChessBoard : ReactiveObject
 
     private bool IsLegalMove(Move? move)
     {
+        //TODO: This still needs to account for en passant captures and castling.
+
         if (IsGameFinished())
         {
             _logger?.LogDebug("Move is not legal because the game has already ended.");
@@ -246,7 +264,7 @@ public class ChessBoard : ReactiveObject
         // First, we make the move and get all pieces. Next, we check if there are any attackers on the king.
         var boardPieces = Pieces.Items.ToDictionary(p => p.Square);
         boardPieces.Remove(move.From);
-        boardPieces[move.To] = piece with {Square = move.To};
+        boardPieces[move.To] = piece with { Square = move.To };
 
         var checkingPieces = GetAttackers(king.Square, CurrentTurn.Flipped(), boardPieces).ToList();
         if (checkingPieces.Any())

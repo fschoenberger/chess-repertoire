@@ -10,7 +10,7 @@ namespace ChessRepertoire.Model.Tests.Board;
 
 
 [TestClass]
-public class BoardTest
+public class ChessBoardTest
 {
     [TestMethod]
     public void WhitePawnCanMoveTwoSpacesFromBaseWhenUnobstructed()
