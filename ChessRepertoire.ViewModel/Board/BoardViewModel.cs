@@ -38,7 +38,7 @@ namespace ChessRepertoire.ViewModel.Board
         private readonly ReadOnlyObservableCollection<IPieceViewModel> _pieces;
         public ReadOnlyObservableCollection<IPieceViewModel> Pieces => _pieces;
 
-        [Reactive] public Color Orientation { get; set; } = Color.Black;
+        [Reactive] public Color Orientation { get; set; } = Color.White;
 
         public ICommand FlipBoardCommand { get; }
 
@@ -49,7 +49,8 @@ namespace ChessRepertoire.ViewModel.Board
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
-        public BoardViewModel() {
+        public BoardViewModel()
+        {
             IChessBoardRepository boardRepository = new FenRepository();
             _board = boardRepository.FromFen(ChessBoard.InitialPositionFen);
 
@@ -99,28 +100,39 @@ namespace ChessRepertoire.ViewModel.Board
             if (SelectedPiece == null)
                 return;
 
-            // TODO: We need to deal with promotions here
-            var move = new Move(
-                new Square(SelectedPiece.File, SelectedPiece.Rank),
-                new Square(file, rank)
-            );
-
-            if (_board.MakeMove(move)) {
-                SelectedPiece = null;
-            }
+            MakeMove(file, rank);
         }
 
         private void SelectPiece(IPieceViewModel piece)
         {
             Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
 
-            // BUG: This is just a placeholder
-            SelectedPiece = piece;
+            if (piece.Color == _board.CurrentTurn) {
+                SelectedPiece = piece;
+                return;
+            }
 
-            // First we check if the user clicked on a piece with the same color,
-            // because then we can change the selection.
+            if (SelectedPiece == null || SelectedPiece == piece)
+                return;
 
-            // Otherwise the user wants to capture the clicked piece.
+            MakeMove(piece.File, piece.Rank);
+        }
+
+        private void MakeMove(int targetFile, int targetRank) {
+            if (SelectedPiece == null)
+                return;
+
+            // TODO: We need to deal with promotions here
+
+            var move = new Move(
+                new Square(SelectedPiece.File, SelectedPiece.Rank),
+                new Square(targetFile, targetRank)
+            );
+
+            if (_board.MakeMove(move))
+            {
+                SelectedPiece = null;
+            }
         }
     }
 }

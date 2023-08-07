@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ChessRepertoire.Infrastructure\ChessRepertoire.Infrastructure.csproj" />
     <ProjectReference Include="..\ChessRepertoire.Model\ChessRepertoire.Model.csproj" />
   </ItemGroup>
 
