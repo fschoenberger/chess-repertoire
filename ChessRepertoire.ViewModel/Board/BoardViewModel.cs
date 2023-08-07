@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ChessRepertoire.Infrastructure;
 using ChessRepertoire.Model.Board;
 using DynamicData;
 using DynamicData.Kernel;
@@ -48,9 +49,9 @@ namespace ChessRepertoire.ViewModel.Board
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
-        public BoardViewModel()
-        {
-            _board = new ChessBoard();
+        public BoardViewModel() {
+            IChessBoardRepository boardRepository = new FenRepository();
+            _board = boardRepository.FromFen(ChessBoard.InitialPositionFen);
 
             _fields = new IFieldViewModel[8, 8];
 

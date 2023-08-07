@@ -8,7 +8,8 @@ using ReactiveUI.Fody.Helpers;
 namespace ChessRepertoire.Model.Board;
 
 [Flags]
-public enum CastlingRights {
+public enum CastlingRights
+{
     None = 0,
     WhiteKingSide = 1,
     WhiteQueenSide = 2,
@@ -16,7 +17,8 @@ public enum CastlingRights {
     BlackQueenSide = 8
 }
 
-public class ChessBoard : ReactiveObject {
+public class ChessBoard : ReactiveObject
+{
     private Square? _enPassantTargetSquare;
     private CastlingRights _castlingRights;
 
@@ -41,88 +43,30 @@ public class ChessBoard : ReactiveObject {
 
     public ICommand MoveCommand { get; }
 
-    public ChessBoard(string position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+    public ChessBoard(Color currentTurn, int halfMoveClock, int fullMoveNumber, IEnumerable<ChessPiece> pieces, CastlingRights castlingRights, Square? enPassantTargetSquare = null)
+    {
         MoveCommand = ReactiveCommand.Create<Move, bool>(MakeMove);
 
-        var components = position.Split(' ');
+        CurrentTurn = currentTurn;
+        HalfMoveClock = halfMoveClock;
+        FullMoveNumber = fullMoveNumber;
+        _castlingRights = castlingRights;
+        _enPassantTargetSquare = enPassantTargetSquare;
 
-        var piecePlacement = components[0];
-        if (piecePlacement.Count(c => c == 'k') != 1)
-            throw new IllegalFenException("There must be exactly one black King!");
-
-        if (piecePlacement.Count(c => c == 'K') != 1)
-            throw new IllegalFenException("There must be exactly one white King!");
-
-        // FEN is from rank 8 to rank 1, but we store it from rank 1 to rank 8
-        var ranks = piecePlacement.Split('/').Reverse().ToArray();
-
-        if (ranks.Length != 8)
-            throw new IllegalFenException($"The format must describe 8 ranks, got {ranks.Length} instead.");
-
-        Pieces.Edit(innerCache => {
-            for (var rank = 0; rank < 8; rank++) {
-                var rankString = ranks[rank];
-
-                for (var file = 0; file < 8; file++) {
-                    var piece = rankString[file];
-
-                    if (piece is >= '1' and <= '8') {
-                        file += piece - '0' - 1;
-                        continue;
-                    }
-
-                    var color = char.IsUpper(piece) ? Color.White : Color.Black;
-                    var pieceType = char.ToLower(piece) switch {
-                        'p' => PieceType.Pawn,
-                        'n' => PieceType.Knight,
-                        'b' => PieceType.Bishop,
-                        'r' => PieceType.Rook,
-                        'q' => PieceType.Queen,
-                        'k' => PieceType.King,
-                        _ => throw new IllegalFenException($"Piece type must be one of p, n, b, r, q, k, instead is {piece}")
-                    };
-                    innerCache.AddOrUpdate(new ChessPiece(color, pieceType, new Square(file, rank)));
-                }
+        Pieces.Edit(c => {
+            foreach (var piece in pieces) {
+                c.AddOrUpdate(piece);
             }
         });
-
-        CurrentTurn = components[1] == "w" ? Color.White : (components[1] == "b" ? Color.Black : throw new IllegalFenException($"Piece color must be either black or white, instead is {components[1]}"));
-
-        var castlingAvailability = components[2];
-        if (castlingAvailability.Any(c => c != '-' && c != 'K' && c != 'k' && c != 'Q' && c != 'q'))
-            throw new IllegalFenException($"Castling availability must be one of -, K, k, Q, q, instead is {castlingAvailability}");
-
-        _castlingRights = CastlingRights.None;
-        _castlingRights |= castlingAvailability.Contains('K') ? CastlingRights.WhiteKingSide : CastlingRights.None;
-        _castlingRights |= castlingAvailability.Contains('Q') ? CastlingRights.WhiteQueenSide : CastlingRights.None;
-        _castlingRights |= castlingAvailability.Contains('k') ? CastlingRights.BlackKingSide : CastlingRights.None;
-        _castlingRights |= castlingAvailability.Contains('q') ? CastlingRights.BlackQueenSide : CastlingRights.None;
-
-        var enPassantTargetSquare = components[3];
-        if (enPassantTargetSquare != "-") {
-            var file = enPassantTargetSquare[0] - 'a';
-            var rank = enPassantTargetSquare[1] - '1';
-            _enPassantTargetSquare = new Square(file, rank);
-        }
-
-        try {
-            HalfMoveClock = Convert.ToInt32(components[4]);
-        } catch (FormatException e) {
-            throw new IllegalFenException($"Half move clock must be an integer, instead is {components[4]}", e);
-        }
-
-        try {
-            FullMoveNumber = Convert.ToInt32(components[5]);
-        } catch (FormatException e) {
-            throw new IllegalFenException($"Full move number must be an integer, instead is {components[5]}", e);
-        }
     }
 
-    private bool IsLegalMove(Move? move) {
+    private bool IsLegalMove(Move? move)
+    {
         return true;
     }
 
-    public bool MakeMove(Move? move) {
+    public bool MakeMove(Move? move)
+    {
         if (!IsLegalMove(move))
             return false;
 
@@ -130,7 +74,8 @@ public class ChessBoard : ReactiveObject {
             MakeLegalNonNullMove(move);
 
         HalfMoveClock = (HalfMoveClock + 1) % 2;
-        if (CurrentTurn == Color.Black) {
+        if (CurrentTurn == Color.Black)
+        {
             FullMoveNumber++;
         }
 
@@ -141,12 +86,14 @@ public class ChessBoard : ReactiveObject {
         return true;
     }
 
-    private void MakeLegalNonNullMove(Move move) {
+    private void MakeLegalNonNullMove(Move move)
+    {
         var piece = Pieces.Lookup(move.From);
         if (!piece.HasValue)
             throw new InvalidOperationException("A legal move turns out to be illegal!");
 
-        Pieces.Edit(a => {
+        Pieces.Edit(a =>
+        {
             a.Remove(move.From);
             a.AddOrUpdate(piece.Value with { Square = move.To });
         });
@@ -156,13 +103,16 @@ public class ChessBoard : ReactiveObject {
         _moves.Push(move);
     }
 
-    public void UndoMove() {
+    public void UndoMove()
+    {
         _moves.Pop();
     }
 }
 
-public class IllegalFenException : Exception {
-    public IllegalFenException(string message) : base(message) {
+public class IllegalFenException : Exception
+{
+    public IllegalFenException(string message) : base(message)
+    {
     }
 
     public IllegalFenException(string message, Exception innerException) : base(message, innerException) { }
