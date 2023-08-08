@@ -14,15 +14,15 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ChessRepertoire.Model.Board;
 
-namespace ChessRepertoire.View.Wpf.Control.PiecePicker
+namespace ChessRepertoire.View.Wpf.Control.PromotionPiecePicker
 {
     /// <summary>
-    /// Interaction logic for PromotionPiecePicker.xaml
+    /// Interaction logic for PromotionPiecePickerWindow.xaml
     /// </summary>
-    public partial class PromotionPiecePicker : Window {
+    public partial class PromotionPiecePickerWindow : Window {
         public PieceType Type { get; private set; } = PieceType.Queen;
 
-        public PromotionPiecePicker()
+        public PromotionPiecePickerWindow()
         {
             InitializeComponent();
         }

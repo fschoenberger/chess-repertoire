@@ -7,7 +7,7 @@ using ReactiveMarbles.ObservableEvents;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 using ChessRepertoire.Model.Board;
-using ChessRepertoire.View.Wpf.Control.PiecePicker;
+using ChessRepertoire.View.Wpf.Control.PromotionPiecePicker;
 using ReactiveUI;
 
 namespace ChessRepertoire.View.Wpf.Control.Board
@@ -49,7 +49,7 @@ namespace ChessRepertoire.View.Wpf.Control.Board
                     .DisposeWith(d);
 
                 this.ViewModel.Promotion.RegisterHandler(async interaction => {
-                    var modal = new PromotionPiecePicker();
+                    var modal = new PromotionPiecePickerWindow();
                     modal.ShowDialog();
 
                     interaction.SetOutput(modal.Type);
