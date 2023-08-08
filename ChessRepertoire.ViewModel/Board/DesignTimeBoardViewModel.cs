@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -40,5 +41,7 @@ namespace ChessRepertoire.ViewModel.Board {
         public ICommand SelectFieldCommand { get; } = new NullCommand();
 
         public ICommand SelectPieceCommand { get; } = new NullCommand();
+
+        public Interaction<Unit, PieceType> Promotion { get; }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,6 +47,8 @@ namespace ChessRepertoire.ViewModel.Board
 
         public ICommand SelectPieceCommand { get; }
 
+        public Interaction<Unit, PieceType> Promotion { get; }
+
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
@@ -65,14 +68,16 @@ namespace ChessRepertoire.ViewModel.Board
                 }
             }
 
+            Promotion = new Interaction<Unit, PieceType>();
+
             FlipBoardCommand = ReactiveCommand.Create(() =>
             {
                 Orientation = Orientation == Color.Black ? Color.White : Color.Black;
             });
 
-            SelectFieldCommand = ReactiveCommand.Create((IFieldViewModel field) => SelectField(field));
+            SelectFieldCommand = ReactiveCommand.CreateFromTask(async (IFieldViewModel field) => await SelectField(field));
 
-            SelectPieceCommand = ReactiveCommand.Create((IPieceViewModel piece) => SelectPiece(piece));
+            SelectPieceCommand = ReactiveCommand.CreateFromTask(async (IPieceViewModel piece) => await SelectPiece(piece));
 
             _board.Pieces.Connect()
                 .Transform(p => (IPieceViewModel)new PieceViewModel(p))
@@ -82,7 +87,7 @@ namespace ChessRepertoire.ViewModel.Board
 
         }
 
-        private void SelectField(IFieldViewModel field)
+        private async Task SelectField(IFieldViewModel field)
         {
             Debug.WriteLine($"Click on {(char)('A' + field.File)}{field.Rank + 1}");
 
@@ -93,7 +98,7 @@ namespace ChessRepertoire.ViewModel.Board
             var piece = Pieces.FirstOrOptional(p => p.Rank == rank && p.File == file);
             if (piece.HasValue)
             {
-                SelectPiece(piece.Value);
+                await SelectPiece(piece.Value);
                 return;
             }
 
@@ -101,10 +106,10 @@ namespace ChessRepertoire.ViewModel.Board
             if (SelectedPiece == null)
                 return;
 
-            MakeMove(file, rank);
+            await MakeMove(file, rank);
         }
 
-        private void SelectPiece(IPieceViewModel piece)
+        private async Task SelectPiece(IPieceViewModel piece)
         {
             Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
 
@@ -120,17 +125,19 @@ namespace ChessRepertoire.ViewModel.Board
             if (SelectedPiece == null || SelectedPiece == piece)
                 return;
 
-            MakeMove(piece.File, piece.Rank);
+            await MakeMove(piece.File, piece.Rank);
         }
 
-        private void MakeMove(int targetFile, int targetRank) {
+        private async Task MakeMove(int targetFile, int targetRank) {
             if (SelectedPiece == null)
                 return;
 
             // TODO: We need to deal with promotions here properly instead of auto-promoting
             ChessPiece? promotion = null;
             if (targetRank is 0 or 7 && SelectedPiece.Type == PieceType.Pawn) {
-                promotion = new ChessPiece(SelectedPiece.Color, PieceType.Queen, new Square(targetFile, targetRank));
+                var pieceType = await Promotion.Handle(Unit.Default);
+
+                promotion = new ChessPiece(SelectedPiece.Color, pieceType, new Square(targetFile, targetRank));
             }
 
             var move = new Move(

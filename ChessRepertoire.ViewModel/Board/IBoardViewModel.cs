@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Reactive;
 using System.Windows.Input;
 using ChessRepertoire.Model.Board;
 using ReactiveUI;
@@ -18,4 +19,6 @@ public interface IBoardViewModel : IReactiveObject
     public ICommand SelectFieldCommand { get; }
 
     public ICommand SelectPieceCommand { get; }
+
+    Interaction<Unit, PieceType> Promotion { get; }
 }
