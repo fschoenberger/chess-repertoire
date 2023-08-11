@@ -12,6 +12,8 @@ internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPass
 
     public string Id => GetId();
 
+    // Currently, this is a pseudo-FEN, in the future this should probably be replaced with Zobrist hashing.
+    // https://en.wikipedia.org/wiki/Zobrist_hashing
     private string GetId()
     {
         var builder = new StringBuilder();
@@ -55,7 +57,6 @@ internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPass
 
 
         return builder.ToString();
-
     }
 
     public bool IsGameFinished()
@@ -284,15 +285,24 @@ internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPass
 
         if (piece.Type == PieceType.King && !IsCastlingMove(piece, move))
         {
-            if (piece.Color == Color.White)
+            switch (piece.Color)
             {
-                castlingRights &= ~(CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide);
-                _logger?.LogDebug("White lost all castling rights because they moved their king.");
-            }
-            else if (piece.Color == Color.Black)
-            {
-                castlingRights &= ~(CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide);
-                _logger?.LogDebug("White lost all castling rights because they moved their king.");
+                case Color.White:
+                    if ((castlingRights & (CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide)) != 0)
+                    {
+                        castlingRights &= ~(CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide);
+                        _logger.LogDebug("White lost all castling rights because they moved their king.");
+                    }
+
+                    break;
+                case Color.Black:
+                    if ((castlingRights & (CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide)) != 0)
+                    {
+                        castlingRights &= ~(CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide);
+                        _logger.LogDebug("White lost all castling rights because they moved their king.");
+                    }
+
+                    break;
             }
         }
 
@@ -301,20 +311,36 @@ internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPass
             switch (move.From)
             {
                 case { File: 0, Rank: 0 }:
-                    castlingRights &= ~CastlingRights.WhiteQueenSide;
-                    _logger?.LogDebug("White lost queenside castling rights because they moved their rook from the starting position.");
+                    if ((castlingRights & CastlingRights.WhiteQueenSide) != 0)
+                    {
+                        castlingRights &= ~CastlingRights.WhiteQueenSide;
+                        _logger.LogDebug("White lost queenside castling rights because they moved their rook from the starting position.");
+                    }
+
                     break;
                 case { File: 7, Rank: 0 }:
-                    castlingRights &= ~CastlingRights.WhiteKingSide;
-                    _logger?.LogDebug("White lost kingside castling rights because they moved their rook from the starting position.");
+                    if ((castlingRights & CastlingRights.WhiteKingSide) != 0)
+                    {
+                        castlingRights &= ~CastlingRights.WhiteKingSide;
+                        _logger.LogDebug("White lost kingside castling rights because they moved their rook from the starting position.");
+                    }
+
                     break;
                 case { File: 0, Rank: 7 }:
-                    castlingRights &= ~CastlingRights.BlackQueenSide;
-                    _logger?.LogDebug("Black lost queenside castling rights because they moved their rook from the starting position.");
+                    if ((castlingRights & CastlingRights.BlackQueenSide) != 0)
+                    {
+                        castlingRights &= ~CastlingRights.BlackQueenSide;
+                        _logger.LogDebug("Black lost queenside castling rights because they moved their rook from the starting position.");
+                    }
+
                     break;
                 case { File: 7, Rank: 7 }:
-                    castlingRights &= ~CastlingRights.BlackKingSide;
-                    _logger?.LogDebug("Black lost kingside castling rights because they moved their rook from the starting position.");
+                    if ((castlingRights & CastlingRights.BlackKingSide) != 0)
+                    {
+                        castlingRights &= ~CastlingRights.BlackKingSide;
+                        _logger.LogDebug("Black lost kingside castling rights because they moved their rook from the starting position.");
+                    }
+
                     break;
             }
         }
@@ -325,20 +351,36 @@ internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPass
         switch (move.To)
         {
             case { File: 0, Rank: 0 }:
-                castlingRights &= ~CastlingRights.WhiteQueenSide;
-                _logger?.LogDebug("White lost queenside castling rights because their rook was captured.");
+                if ((castlingRights & CastlingRights.WhiteQueenSide) != 0)
+                {
+                    castlingRights &= ~CastlingRights.WhiteQueenSide;
+                    _logger.LogDebug("White lost queenside castling rights because their rook was captured.");
+                }
+
                 break;
             case { File: 7, Rank: 0 }:
-                castlingRights &= ~CastlingRights.WhiteKingSide;
-                _logger?.LogDebug("White lost kingside castling rights because their rook was captured.");
+                if ((castlingRights & CastlingRights.WhiteKingSide) != 0)
+                {
+                    castlingRights &= ~CastlingRights.WhiteKingSide;
+                    _logger.LogDebug("White lost kingside castling rights because their rook was captured.");
+                }
+
                 break;
             case { File: 0, Rank: 7 }:
-                castlingRights &= ~CastlingRights.BlackQueenSide;
-                _logger?.LogDebug("White lost queenside castling rights because their rook was captured.");
+                if ((castlingRights & CastlingRights.BlackQueenSide) != 0)
+                {
+                    castlingRights &= ~CastlingRights.BlackQueenSide;
+                    _logger.LogDebug("White lost queenside castling rights because their rook was captured.");
+                }
+
                 break;
             case { File: 7, Rank: 7 }:
-                castlingRights &= ~CastlingRights.BlackKingSide;
-                _logger?.LogDebug("White lost kingside castling rights because their rook was captured.");
+                if ((castlingRights & CastlingRights.BlackKingSide) != 0)
+                {
+                    castlingRights &= ~CastlingRights.BlackKingSide;
+                    _logger.LogDebug("White lost kingside castling rights because their rook was captured.");
+                }
+
                 break;
         }
 
