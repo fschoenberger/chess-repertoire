@@ -8,13 +8,102 @@ namespace ChessRepertoire.Model.Board;
 
 internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassantTargetSquare, CastlingRights CastlingRights, Color CurrentTurn)
 {
+    // Define the board dimensions
+    private const int BoardSize = 8;
+
+    // Define the number of pieces and squares
+    private const int NumPieces = 12; // 6 piece types in 2 colors
+    private const int NumSquares = BoardSize * BoardSize;
+
+    private readonly static ulong[][] PieceKeys;
+    private readonly static ulong SideKey;
+    private readonly static ulong[] CastleKeys;
+    private readonly static ulong[] EnPassantKeys;
+
+    static ulong GenerateRandomUlong()
+    {
+        var bytes = new byte[8];
+        new Random().NextBytes(bytes);
+        return BitConverter.ToUInt64(bytes, 0);
+    }
+
+    static BoardState()
+    {
+
+        PieceKeys = new ulong[NumPieces][];
+        for (var i = 0; i < NumPieces; i++)
+        {
+            PieceKeys[i] = new ulong[NumSquares];
+            for (var j = 0; j < NumSquares; j++)
+            {
+                PieceKeys[i][j] = GenerateRandomUlong();
+            }
+        }
+
+        SideKey = GenerateRandomUlong();
+
+        CastleKeys = new ulong[4];
+        for (var i = 0; i < 4; i++)
+        {
+            CastleKeys[i] = GenerateRandomUlong();
+        }
+
+        EnPassantKeys = new ulong[BoardSize];
+        for (var i = 0; i < BoardSize; i++)
+        {
+            EnPassantKeys[i] = GenerateRandomUlong();
+        }
+    }
+
     private readonly ILogger _logger = new DebugLoggerProvider().CreateLogger(nameof(BoardState));
 
-    public string Id => GetId();
+    public ulong Id => GetZobristHash();
+
+    private ulong GetZobristHash()
+    {
+        ulong hash = 0;
+
+        foreach (var piece in Pieces.Values) {
+            var index = (int)piece.Type + (piece.Color == Color.White ? 6 : 0);
+            hash ^= PieceKeys[index][piece.Square.Rank * 8 + piece.Square.File];
+        }
+
+        if (CurrentTurn != Color.White)
+        {
+            hash ^= SideKey;
+        }
+
+        if ((CastlingRights & CastlingRights.BlackKingSide) != 0)
+        {
+            hash ^= CastleKeys[0];
+        }
+
+        if ((CastlingRights & CastlingRights.BlackQueenSide) != 0)
+        {
+            hash ^= CastleKeys[1];
+        }
+
+        if ((CastlingRights & CastlingRights.WhiteKingSide) != 0)
+        {
+            hash ^= CastleKeys[2];
+        }
+
+        if ((CastlingRights & CastlingRights.WhiteQueenSide) != 0)
+        {
+            hash ^= CastleKeys[3];
+        }
+
+        if (EnPassantTargetSquare != null)
+        {
+            hash ^= EnPassantKeys[EnPassantTargetSquare.File];
+        }
+
+        return hash;
+    }
 
     // Currently, this is a pseudo-FEN, in the future this should probably be replaced with Zobrist hashing.
     // https://en.wikipedia.org/wiki/Zobrist_hashing
-    private string GetId()
+    private string GetFen()
     {
         var builder = new StringBuilder();
 

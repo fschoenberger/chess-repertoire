@@ -23,7 +23,7 @@ public class ChessBoard : ReactiveObject
 
     private readonly ILogger? _logger;
 
-    private readonly IDictionary<string, BoardState> _boardStates = new Dictionary<string, BoardState>();
+    private readonly IDictionary<ulong, BoardState> _boardStates = new Dictionary<ulong, BoardState>();
 
     private readonly ObservableAsPropertyHelper<BoardState> _currentBoardState;
     private BoardState CurrentBoardState => _currentBoardState.Value;
@@ -47,7 +47,7 @@ public class ChessBoard : ReactiveObject
     public IReadOnlyDictionary<Square, ChessPiece> Pieces => _pieces.Value;
 
     [Reactive]
-    public string CurrentFen { get; private set; }
+    public ulong CurrentId { get; private set; }
 
     public ChessBoard(
         IEnumerable<ChessPiece> pieces,
@@ -67,11 +67,11 @@ public class ChessBoard : ReactiveObject
         );
 
         _boardStates[state.Id] = state;
-        CurrentFen = state.Id;
+        CurrentId = state.Id;
 
         _logger = logger ?? new DebugLoggerProvider().CreateLogger(nameof(ChessBoard));
 
-        var currentBoardState = this.WhenAnyValue(x => x.CurrentFen)
+        var currentBoardState = this.WhenAnyValue(x => x.CurrentId)
             .Select(id => _boardStates[id]);
 
         _currentBoardState = currentBoardState.ToProperty(this, x => x.CurrentBoardState);
@@ -88,7 +88,7 @@ public class ChessBoard : ReactiveObject
             var nextBoardState = CurrentBoardState.MakeMove(move);
 
             _boardStates[nextBoardState.Id] = nextBoardState;
-            CurrentFen = nextBoardState.Id;
+            CurrentId = nextBoardState.Id;
 
             return true;
         }
