@@ -20,7 +20,7 @@ namespace ChessRepertoire.ViewModel.Board {
             }
         }
 
-        private ObservableCollection<IPieceViewModel> _pieces = new(new List<IPieceViewModel>
+        private IList<IPieceViewModel> _pieces = new List<IPieceViewModel>
         {
             new PieceViewModel(PieceType.Pawn, Color.White, 1, 1),
             new PieceViewModel(PieceType.Pawn, Color.White, 1, 2),
@@ -29,10 +29,10 @@ namespace ChessRepertoire.ViewModel.Board {
             new PieceViewModel(PieceType.Pawn, Color.White, 1, 5),
             new PieceViewModel(PieceType.Pawn, Color.White, 1, 6),
             new PieceViewModel(PieceType.Pawn, Color.White, 1, 7),
-        });
+        };
 
 
-        public ReadOnlyObservableCollection<IPieceViewModel> Pieces => new(_pieces);
+        public IEnumerable<IPieceViewModel> Pieces => _pieces;
 
         public Color Orientation { get; set; } = Color.Black;
 

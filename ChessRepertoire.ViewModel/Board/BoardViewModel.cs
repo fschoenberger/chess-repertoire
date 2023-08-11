@@ -36,8 +36,8 @@ namespace ChessRepertoire.ViewModel.Board
 
         private readonly ChessBoard _board;
 
-        private readonly ReadOnlyObservableCollection<IPieceViewModel> _pieces;
-        public ReadOnlyObservableCollection<IPieceViewModel> Pieces => _pieces;
+        private readonly ObservableAsPropertyHelper<IEnumerable<IPieceViewModel>> _pieces;
+        public IEnumerable<IPieceViewModel> Pieces => _pieces.Value;
 
         [Reactive] public Color Orientation { get; set; } = Color.White;
 
@@ -79,12 +79,10 @@ namespace ChessRepertoire.ViewModel.Board
 
             SelectPieceCommand = ReactiveCommand.CreateFromTask(async (IPieceViewModel piece) => await SelectPiece(piece));
 
-            _board.Pieces.Connect()
-                .Transform(p => (IPieceViewModel)new PieceViewModel(p))
+            _pieces = _board.WhenAnyValue(x => x.Pieces.Values)
+                .Select(list => list.Select(p => (IPieceViewModel)new PieceViewModel(p)))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Bind(out _pieces)
-                .Subscribe();
-
+                .ToProperty(this, x => x.Pieces);
         }
 
         private async Task SelectField(IFieldViewModel field)

@@ -10,7 +10,7 @@ public interface IBoardViewModel : IReactiveObject
 {
     public IEnumerable<IFieldViewModel> Fields { get; }
 
-    public ReadOnlyObservableCollection<IPieceViewModel> Pieces { get; }
+    public IEnumerable<IPieceViewModel> Pieces { get; }
 
     public Color Orientation { get; set; }
 
