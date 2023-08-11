@@ -5,7 +5,6 @@ using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using ChessRepertoire.Infrastructure.Repository;
 using ReactiveUI;
 
 namespace ChessRepertoire.ViewModel {
@@ -18,8 +17,7 @@ namespace ChessRepertoire.ViewModel {
         {
             _command = ReactiveCommand.Create(() =>
             {
-                var repository = new VariationGraphRepository();
-                repository.GetGraph();
+                
             });
 
 
