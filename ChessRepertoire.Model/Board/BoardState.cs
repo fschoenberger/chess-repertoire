@@ -10,52 +10,52 @@ internal record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPass
 {
     private readonly ILogger _logger = new DebugLoggerProvider().CreateLogger(nameof(BoardState));
 
-    public string Id
+    public string Id => GetId();
+
+    private string GetId()
     {
-        get
+        var builder = new StringBuilder();
+
+        var emptySquares = 0;
+
+        for (var rank = 7; rank >= 0; rank--)
         {
-            var builder = new StringBuilder();
-
-            var emptySquares = 0;
-
-            for (var rank = 7; rank >= 0; rank--)
+            for (var file = 0; file < 8; file++)
             {
-                for (var file = 0; file < 8; file++)
+                var square = new Square(file, rank);
+                var found = Pieces.TryGetValue(square, out var piece);
+
+                if (!found)
                 {
-                    var square = new Square(file, rank);
-                    var found = Pieces.TryGetValue(square, out var piece);
-
-                    if (!found)
-                    {
-                        emptySquares++;
-                    }
-                    else
-                    {
-                        if (emptySquares > 0)
-                        {
-                            builder.Append(emptySquares);
-                            emptySquares = 0;
-                        }
-
-                        builder.Append(piece!.ToFenSymbol());
-                    }
+                    emptySquares++;
                 }
-
-                if (emptySquares > 0)
+                else
                 {
-                    builder.Append(emptySquares);
-                    emptySquares = 0;
-                }
+                    if (emptySquares > 0)
+                    {
+                        builder.Append(emptySquares);
+                        emptySquares = 0;
+                    }
 
-                if (rank > 0)
-                {
-                    builder.Append('/');
+                    builder.Append(piece!.ToFenSymbol());
                 }
             }
 
+            if (emptySquares > 0)
+            {
+                builder.Append(emptySquares);
+                emptySquares = 0;
+            }
 
-            return builder.ToString();
+            if (rank > 0)
+            {
+                builder.Append('/');
+            }
         }
+
+
+        return builder.ToString();
+
     }
 
     public bool IsGameFinished()
