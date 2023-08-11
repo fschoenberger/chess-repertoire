@@ -9,6 +9,9 @@ namespace ChessRepertoire.Infrastructure
 {
     public class FenRepository : IChessBoardRepository
     {
+
+        public static string InitialPositionFen => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
         public ChessBoard FromFen(string position)
         {
             var components = position.Split(' ');

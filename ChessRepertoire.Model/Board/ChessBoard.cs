@@ -18,9 +18,6 @@ public enum CastlingRights
 
 public class ChessBoard : ReactiveObject
 {
-
-    public static string InitialPositionFen => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
     private readonly ILogger? _logger;
 
     private readonly IDictionary<ulong, BoardState> _boardStates = new Dictionary<ulong, BoardState>();
