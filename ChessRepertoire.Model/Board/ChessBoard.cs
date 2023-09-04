@@ -1,4 +1,7 @@
-﻿using System.Reactive.Linq;
+﻿using System.Globalization;
+using System.Reactive.Linq;
+using System.Security.Cryptography;
+using DynamicData;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
 using ReactiveUI;
@@ -21,6 +24,11 @@ public class ChessBoard : ReactiveObject
     private readonly ILogger? _logger;
 
     private readonly IDictionary<ulong, BoardState> _boardStates = new Dictionary<ulong, BoardState>();
+
+    // Implementation note: We currently save our edges in two data structures. The reason is that we want to get a move's successor(s) 
+    // as often as their predecessor(s) and it's cheaper to cache than to recalculate every time. 
+    private readonly IDictionary<ulong, ISet<ulong>> _predecessors = new Dictionary<ulong, ISet<ulong>>();
+    private readonly IDictionary<ulong, ISet<ulong>> _successors = new Dictionary<ulong, ISet<ulong>>();
 
     private readonly ObservableAsPropertyHelper<BoardState> _currentBoardState;
     private BoardState CurrentBoardState => _currentBoardState.Value;
@@ -45,6 +53,8 @@ public class ChessBoard : ReactiveObject
 
     [Reactive]
     public ulong CurrentId { get; private set; }
+
+    public ISourceList<BoardState> BoardStates { get; }
 
     public ChessBoard(
         IEnumerable<ChessPiece> pieces,
@@ -82,10 +92,31 @@ public class ChessBoard : ReactiveObject
     {
         try
         {
-            var nextBoardState = CurrentBoardState.MakeMove(move);
 
-            _boardStates[nextBoardState.Id] = nextBoardState;
-            CurrentId = nextBoardState.Id;
+            var oldId = CurrentBoardState.Id;
+            var nextBoardState = CurrentBoardState.MakeMove(move);
+            var id = nextBoardState.Id;
+
+            if (_successors.TryGetValue(oldId, out var successors))
+            {
+                successors!.Add(id);
+            }
+            else
+            {
+                _successors[oldId] = new HashSet<ulong> { id };
+            }
+
+            if (_predecessors.TryGetValue(id, out var predecessors))
+            {
+                predecessors!.Add(id);
+            }
+            else
+            {
+                _predecessors[id] = new HashSet<ulong> { oldId };
+            }
+
+            _boardStates[id] = nextBoardState;
+            CurrentId = id;
 
             return true;
         }
