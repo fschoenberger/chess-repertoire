@@ -22,10 +22,11 @@ namespace ChessRepertoire.View {
     public partial class MainWindow : ReactiveWindow<AppViewModel> {
         public MainWindow() {
             InitializeComponent();
-
             ViewModel = new AppViewModel();
 
             this.WhenActivated(d => {
+                d(this.OneWayBind(ViewModel, vm => vm.BoardViewModel, view => view.ChessBoard.ViewModel));
+                d(this.OneWayBind(ViewModel, vm => vm.MoveExplorerViewModel, view => view.MoveExplorer.ViewModel));
                 d(this.BindCommand(ViewModel, vm => vm.LoadVariationGraphCommand, view => view.NewMenuItem));
             });
         }

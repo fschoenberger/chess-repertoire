@@ -8,6 +8,7 @@
                            xmlns:viewModel="clr-namespace:ChessRepertoire.ViewModel;assembly=ChessRepertoire.ViewModel"
                            xmlns:board="clr-namespace:ChessRepertoire.View.Wpf.Control.Board"
                            xmlns:evalBar="clr-namespace:ChessRepertoire.View.Wpf.Control.EvaluationBar"
+                           xmlns:moveExplorer="clr-namespace:ChessRepertoire.View.Wpf.Control.MoveExplorer"
                            mc:Ignorable="d"
                            Title="MainWindow" Height="600" Width="1000">
     <DockPanel>
@@ -26,7 +27,8 @@
         <StackPanel Orientation="Horizontal" Margin="10">
             <StackPanel></StackPanel>
             <evalBar:EvaluationBar Width="20px" Margin="8 0"/>
-            <board:ChessBoard />
+            <board:ChessBoard x:Name="ChessBoard"/>
+            <moveExplorer:MoveExplorerControl x:Name="MoveExplorer" />
         </StackPanel>
     </DockPanel>
 </reactiveUi:ReactiveWindow>

@@ -34,7 +34,7 @@ namespace ChessRepertoire.ViewModel.Board
             }
         }
 
-        private readonly ChessBoard _board;
+        
 
         private readonly ObservableAsPropertyHelper<IEnumerable<IPieceViewModel>> _pieces;
         public IEnumerable<IPieceViewModel> Pieces => _pieces.Value;
@@ -49,15 +49,14 @@ namespace ChessRepertoire.ViewModel.Board
 
         public Interaction<Unit, PieceType> Promotion { get; }
 
+        private readonly ChessBoard _board;
+
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
-        public BoardViewModel()
+        public BoardViewModel(ChessBoard board)
         {
-            IChessBoardRepository boardRepository = new FenRepository();
-            //_board = boardRepository.FromFen(ChessBoard.InitialPositionFen);
-            _board = boardRepository.FromFen("r3k3/pppppppp/8/8/8/8/PPP1PrPP/R2NK2R w KQq - 0 1");
-
+            _board = board;
             _fields = new IFieldViewModel[8, 8];
 
             for (var i = 0; i < 8; ++i)

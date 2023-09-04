@@ -1,12 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using ChessRepertoire.ViewModel.Board;
 using ReactiveMarbles.ObservableEvents;
 using System.Windows.Controls;
 using System.Windows.Shapes;
-using ChessRepertoire.Model.Board;
 using ChessRepertoire.View.Wpf.Control.PromotionPiecePicker;
 using ReactiveUI;
 
@@ -17,8 +14,6 @@ namespace ChessRepertoire.View.Wpf.Control.Board
         public ChessBoard()
         {
             InitializeComponent();
-
-            ViewModel = new BoardViewModel();
 
             this.WhenActivated(d =>
             {
