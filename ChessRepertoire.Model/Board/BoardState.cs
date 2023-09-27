@@ -169,11 +169,11 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
         return IsCastlingMove(piece, move) ? TryCastling(piece, move) : TryMove(piece, move);
     }
 
-    public void AddChild(BoardState state) {
+    internal void AddChild(BoardState state) {
         _children.AddOrUpdate(state);
     }
 
-    public void AddParent(BoardState state) {
+    internal void AddParent(BoardState state) {
         _parents.AddOrUpdate(state);
     }
 
