@@ -10,8 +10,7 @@ using ReactiveUI.Fody.Helpers;
 namespace ChessRepertoire.Model.Board;
 
 [Flags]
-public enum CastlingRights
-{
+public enum CastlingRights {
     None = 0,
     WhiteKingSide = 1,
     WhiteQueenSide = 2,
@@ -19,16 +18,8 @@ public enum CastlingRights
     BlackQueenSide = 8
 }
 
-public class ChessBoard : ReactiveObject
-{
+public class ChessBoard : ReactiveObject {
     private readonly ILogger? _logger;
-
-    private readonly IDictionary<ulong, BoardState> _boardStates = new Dictionary<ulong, BoardState>();
-
-    // Implementation note: We currently save our edges in two data structures. The reason is that we want to get a move's successor(s) 
-    // as often as their predecessor(s) and it's cheaper to cache than to recalculate every time. 
-    private readonly IDictionary<ulong, ISet<ulong>> _predecessors = new Dictionary<ulong, ISet<ulong>>();
-    private readonly IDictionary<ulong, ISet<ulong>> _successors = new Dictionary<ulong, ISet<ulong>>();
 
     private readonly ObservableAsPropertyHelper<BoardState> _currentBoardState;
     private BoardState CurrentBoardState => _currentBoardState.Value;
@@ -54,7 +45,8 @@ public class ChessBoard : ReactiveObject
     [Reactive]
     public ulong CurrentId { get; private set; }
 
-    public ISourceList<BoardState> BoardStates { get; }
+    private readonly ISourceCache<BoardState, ulong> _boardStates = new SourceCache<BoardState, ulong>(x => x.Id);
+    public IObservableCache<BoardState, ulong> BoardStates => _boardStates;
 
     public ChessBoard(
         IEnumerable<ChessPiece> pieces,
@@ -63,9 +55,7 @@ public class ChessBoard : ReactiveObject
         int fullMoveNumber = 1,
         CastlingRights castlingRights = CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide | CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide,
         Square? enPassantTargetSquare = null,
-        ILogger<ChessBoard>? logger = null)
-    {
-
+        ILogger<ChessBoard>? logger = null) {
         var state = new BoardState(
             pieces.ToDictionary(x => x.Square),
             enPassantTargetSquare,
@@ -73,13 +63,15 @@ public class ChessBoard : ReactiveObject
             currentTurn
         );
 
-        _boardStates[state.Id] = state;
+        _boardStates.AddOrUpdate(state);
         CurrentId = state.Id;
 
         _logger = logger ?? new DebugLoggerProvider().CreateLogger(nameof(ChessBoard));
 
-        var currentBoardState = this.WhenAnyValue(x => x.CurrentId)
-            .Select(id => _boardStates[id]);
+        var currentBoardState = this
+            .WhenAnyValue(x => x.CurrentId)
+            .Select(id => _boardStates.Items.FirstOrDefault(s => s.Id == id))
+            .WhereNotNull(); // I don't think this is needed, but it makes the compiler happy
 
         _currentBoardState = currentBoardState.ToProperty(this, x => x.CurrentBoardState);
         _currentTurn = currentBoardState.Select(x => x.CurrentTurn).ToProperty(this, x => x.CurrentTurn);
@@ -88,40 +80,25 @@ public class ChessBoard : ReactiveObject
         _pieces = currentBoardState.Select(x => x.Pieces).ToProperty(this, x => x.Pieces);
     }
 
-    public bool MakeMove(Move? move)
-    {
-        try
-        {
-
-            var oldId = CurrentBoardState.Id;
+    public bool MakeMove(Move? move) {
+        try {
             var nextBoardState = CurrentBoardState.MakeMove(move);
             var id = nextBoardState.Id;
 
-            if (_successors.TryGetValue(oldId, out var successors))
-            {
-                successors!.Add(id);
-            }
-            else
-            {
-                _successors[oldId] = new HashSet<ulong> { id };
+            if (!_boardStates.Keys.Contains(nextBoardState.Id)) {
+                _boardStates.AddOrUpdate(nextBoardState);
+            } else {
+                nextBoardState = _boardStates.Items.FirstOrDefault(x => x.Id == nextBoardState.Id);
             }
 
-            if (_predecessors.TryGetValue(id, out var predecessors))
-            {
-                predecessors!.Add(id);
-            }
-            else
-            {
-                _predecessors[id] = new HashSet<ulong> { oldId };
-            }
+            CurrentBoardState.AddChild(nextBoardState!);
+            nextBoardState!.AddParent(CurrentBoardState);
 
-            _boardStates[id] = nextBoardState;
             CurrentId = id;
 
             return true;
         }
-        catch (InvalidOperationException)
-        {
+        catch (InvalidOperationException) {
             return false;
         }
     }
