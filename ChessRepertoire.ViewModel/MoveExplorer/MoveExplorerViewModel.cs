@@ -7,19 +7,15 @@ using ReactiveUI;
 
 namespace ChessRepertoire.ViewModel.MoveExplorer {
     public class MoveExplorerViewModel : ReactiveObject {
-        private readonly ObservableCollection<dynamic> _moves;
-        public ObservableCollection<dynamic> Moves => _moves;
+        private readonly ObservableCollection<MoveViewModel> _moves;
+        public ObservableCollection<MoveViewModel> Moves => _moves;
 
-        public MoveExplorerViewModel(ChessBoard board) {
-            Observable.Create<IChangeSet<dynamic, ulong>>(
-                observer => {
-                    var locker = new object();
+        public MoveExplorerViewModel(ChessGame game) {
+            //game.BoardStates
+            //    .Connect(x => x.Parents.Count == 0)
+            //    .Transform(x => new MoveViewModel())
+            //    .Bind(ref _moves);
 
-
-                    return Disposable.Empty;
-                });
-
-            _moves = new ObservableCollection<dynamic> { };
         }
     }
 

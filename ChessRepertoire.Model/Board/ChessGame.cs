@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Reactive.Linq;
-using System.Security.Cryptography;
+﻿using System.Reactive.Linq;
 using DynamicData;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
@@ -18,7 +16,7 @@ public enum CastlingRights {
     BlackQueenSide = 8
 }
 
-public class ChessBoard : ReactiveObject {
+public class ChessGame : ReactiveObject {
     private readonly ILogger? _logger;
 
     private readonly ObservableAsPropertyHelper<BoardState> _currentBoardState;
@@ -48,14 +46,14 @@ public class ChessBoard : ReactiveObject {
     private readonly ISourceCache<BoardState, ulong> _boardStates = new SourceCache<BoardState, ulong>(x => x.Id);
     public IObservableCache<BoardState, ulong> BoardStates => _boardStates;
 
-    public ChessBoard(
+    public ChessGame(
         IEnumerable<ChessPiece> pieces,
         Color currentTurn = Color.White,
         int halfMoveClock = 0,
         int fullMoveNumber = 1,
         CastlingRights castlingRights = CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide | CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide,
         Square? enPassantTargetSquare = null,
-        ILogger<ChessBoard>? logger = null) {
+        ILogger<ChessGame>? logger = null) {
         var state = new BoardState(
             pieces.ToDictionary(x => x.Square),
             enPassantTargetSquare,
@@ -66,7 +64,7 @@ public class ChessBoard : ReactiveObject {
         _boardStates.AddOrUpdate(state);
         CurrentId = state.Id;
 
-        _logger = logger ?? new DebugLoggerProvider().CreateLogger(nameof(ChessBoard));
+        _logger = logger ?? new DebugLoggerProvider().CreateLogger(nameof(ChessGame));
 
         var currentBoardState = this
             .WhenAnyValue(x => x.CurrentId)

@@ -12,7 +12,7 @@ namespace ChessRepertoire.Infrastructure
 
         public static string InitialPositionFen => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        public ChessBoard FromFen(string position)
+        public ChessGame FromFen(string position)
         {
             var components = position.Split(' ');
 
@@ -101,7 +101,7 @@ namespace ChessRepertoire.Infrastructure
                 throw new IllegalFenException($"Full move number must be an integer, instead is {components[5]}", e);
             }
 
-            return new ChessBoard(pieces, currentTurn, halfMoveClock, fullMoveNumber, castlingRights, enPassantTargetSquare);
+            return new ChessGame(pieces, currentTurn, halfMoveClock, fullMoveNumber, castlingRights, enPassantTargetSquare);
         }
     }
 }

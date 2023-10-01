@@ -17,7 +17,7 @@ namespace ChessRepertoire.ViewModel {
 
         public ICommand LoadVariationGraphCommand => _command;
 
-        private readonly ChessBoard _board;
+        private readonly ChessGame _game;
 
         public BoardViewModel BoardViewModel { get; }
         public MoveExplorerViewModel MoveExplorerViewModel { get; }
@@ -25,9 +25,9 @@ namespace ChessRepertoire.ViewModel {
         public AppViewModel()
         {
             IChessBoardRepository boardRepository = new FenRepository();
-            _board = boardRepository.FromFen("r3k3/pppppppp/8/8/8/8/PPP1PrPP/R2NK2R w KQq - 0 1");
-            BoardViewModel = new BoardViewModel(_board);
-            MoveExplorerViewModel = new MoveExplorerViewModel(_board);
+            _game = boardRepository.FromFen("r3k3/pppppppp/8/8/8/8/PPP1PrPP/R2NK2R w KQq - 0 1");
+            BoardViewModel = new BoardViewModel(_game);
+            MoveExplorerViewModel = new MoveExplorerViewModel(_game);
 
             _command = ReactiveCommand.Create(() =>
             {

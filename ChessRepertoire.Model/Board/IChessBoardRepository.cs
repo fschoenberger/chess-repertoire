@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 namespace ChessRepertoire.Model.Board
 {
     public interface IChessBoardRepository {
-        ChessBoard FromFen(string fen);
+        ChessGame FromFen(string fen);
     }
 }

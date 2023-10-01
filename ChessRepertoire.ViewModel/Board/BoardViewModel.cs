@@ -49,14 +49,14 @@ namespace ChessRepertoire.ViewModel.Board
 
         public Interaction<Unit, PieceType> Promotion { get; }
 
-        private readonly ChessBoard _board;
+        private readonly ChessGame _game;
 
         [Reactive]
         public IPieceViewModel? SelectedPiece { get; set; }
 
-        public BoardViewModel(ChessBoard board)
+        public BoardViewModel(ChessGame game)
         {
-            _board = board;
+            _game = game;
             _fields = new IFieldViewModel[8, 8];
 
             for (var i = 0; i < 8; ++i)
@@ -78,7 +78,7 @@ namespace ChessRepertoire.ViewModel.Board
 
             SelectPieceCommand = ReactiveCommand.CreateFromTask(async (IPieceViewModel piece) => await SelectPiece(piece));
 
-            _pieces = _board.WhenAnyValue(x => x.Pieces.Values)
+            _pieces = _game.WhenAnyValue(x => x.Pieces.Values)
                 .Select(list => list.Select(p => (IPieceViewModel)new PieceViewModel(p)))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, x => x.Pieces);
@@ -110,7 +110,7 @@ namespace ChessRepertoire.ViewModel.Board
         {
             Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
 
-            if (piece.Color == _board.CurrentTurn) {
+            if (piece.Color == _game.CurrentTurn) {
                 //if (SelectedPiece is { Type: PieceType.King } && piece.Type == PieceType.Rook) {
 
                 //}
@@ -143,7 +143,7 @@ namespace ChessRepertoire.ViewModel.Board
                 promotion
             );
 
-            if (_board.MakeMove(move))
+            if (_game.MakeMove(move))
             {
                 SelectedPiece = null;
             }
