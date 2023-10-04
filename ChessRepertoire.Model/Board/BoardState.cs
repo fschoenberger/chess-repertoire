@@ -23,13 +23,6 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
     //private readonly ulong _id = GetZobristHash();
     public ulong Id => GetZobristHash();
 
-    private readonly ISourceCache<BoardState, ulong> _parents = new SourceCache<BoardState, ulong>(x => x.Id);
-    public IObservableCache<BoardState, ulong> Parents => _parents;
-
-    private readonly ISourceCache<BoardState, ulong> _children = new SourceCache<BoardState, ulong>(x => x.Id);
-    public IObservableCache<BoardState, ulong> Children => _children;
-
-
     static ulong GenerateRandomUlong() {
         var bytes = new byte[8];
         new Random().NextBytes(bytes);
@@ -167,14 +160,6 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
         #endregion
 
         return IsCastlingMove(piece, move) ? TryCastling(piece, move) : TryMove(piece, move);
-    }
-
-    internal void AddChild(BoardState state) {
-        _children.AddOrUpdate(state);
-    }
-
-    internal void AddParent(BoardState state) {
-        _parents.AddOrUpdate(state);
     }
 
     private BoardState TryMove(ChessPiece piece, Move move) {

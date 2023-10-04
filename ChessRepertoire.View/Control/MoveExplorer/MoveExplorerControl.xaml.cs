@@ -16,18 +16,20 @@ using System.Windows.Shapes;
 using ChessRepertoire.ViewModel.MoveExplorer;
 using ReactiveUI;
 
-namespace ChessRepertoire.View.Wpf.Control.MoveExplorer
-{
-    public partial class MoveExplorerControl : ReactiveUserControl<MoveExplorerViewModel>
-    {
-        public MoveExplorerControl()
-        {
+namespace ChessRepertoire.View.Wpf.Control.MoveExplorer {
+    public partial class MoveExplorerControl : ReactiveUserControl<MoveExplorerViewModel> {
+        public MoveExplorerControl() {
             InitializeComponent();
 
             this.WhenActivated(d => {
                 this.OneWayBind(ViewModel,
                         viewModel => viewModel.Moves,
                         view => view.MoveTree.ItemsSource)
+                    .DisposeWith(d);
+
+                this.OneWayBind(ViewModel,
+                    vm => vm.Moves.Count,
+                    v => v.MoveCounter.Text)
                     .DisposeWith(d);
             });
         }

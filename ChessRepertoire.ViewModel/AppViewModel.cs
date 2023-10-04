@@ -17,17 +17,16 @@ namespace ChessRepertoire.ViewModel {
 
         public ICommand LoadVariationGraphCommand => _command;
 
-        private readonly ChessGame _game;
-
         public BoardViewModel BoardViewModel { get; }
         public MoveExplorerViewModel MoveExplorerViewModel { get; }
 
         public AppViewModel()
         {
             IChessBoardRepository boardRepository = new FenRepository();
-            _game = boardRepository.FromFen("r3k3/pppppppp/8/8/8/8/PPP1PrPP/R2NK2R w KQq - 0 1");
-            BoardViewModel = new BoardViewModel(_game);
-            MoveExplorerViewModel = new MoveExplorerViewModel(_game);
+            var game = boardRepository.FromFen("r3k3/pppppppp/8/8/8/8/PPP1PrPP/R2NK2R w KQq - 0 1");
+
+            BoardViewModel = new BoardViewModel(game);
+            MoveExplorerViewModel = new MoveExplorerViewModel(game);
 
             _command = ReactiveCommand.Create(() =>
             {

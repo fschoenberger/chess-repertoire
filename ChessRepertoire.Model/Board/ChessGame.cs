@@ -46,6 +46,9 @@ public class ChessGame : ReactiveObject {
     private readonly ISourceCache<BoardState, ulong> _boardStates = new SourceCache<BoardState, ulong>(x => x.Id);
     public IObservableCache<BoardState, ulong> BoardStates => _boardStates;
 
+    private ISourceCache<Edge, UInt128> _edges = new SourceCache<Edge, UInt128>(e => e.Id);
+    public IObservableCache<Edge, UInt128> Edges => _edges;
+
     public ChessGame(
         IEnumerable<ChessPiece> pieces,
         Color currentTurn = Color.White,
@@ -81,18 +84,19 @@ public class ChessGame : ReactiveObject {
     public bool MakeMove(Move? move) {
         try {
             var nextBoardState = CurrentBoardState.MakeMove(move);
-            var id = nextBoardState.Id;
+            var nextId = nextBoardState.Id;
 
-            if (!_boardStates.Keys.Contains(nextBoardState.Id)) {
+            if (!_boardStates.Keys.Contains(nextId)) {
                 _boardStates.AddOrUpdate(nextBoardState);
-            } else {
-                nextBoardState = _boardStates.Items.FirstOrDefault(x => x.Id == nextBoardState.Id);
             }
 
-            CurrentBoardState.AddChild(nextBoardState!);
-            nextBoardState!.AddParent(CurrentBoardState);
+            var edgeId = ((UInt128)CurrentId << 64) | nextId;
 
-            CurrentId = id;
+            if (!_edges.Keys.Contains(edgeId)) {
+                _edges.AddOrUpdate(new Edge { From = CurrentId, To = nextId, Move = move!.ToString()});
+            }
+
+            CurrentId = nextId;
 
             return true;
         }

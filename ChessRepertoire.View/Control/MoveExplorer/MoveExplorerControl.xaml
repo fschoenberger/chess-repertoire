@@ -10,13 +10,13 @@
                                 mc:Ignorable="d" 
                                 d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{d:DesignInstance moveExplorer:MoveExplorerViewModel}">
     <StackPanel>
+        <TextBlock x:Name="MoveCounter">No moves</TextBlock>
         <TreeView x:Name="MoveTree">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType="{x:Type moveExplorer:MoveViewModel}" ItemsSource="{Binding Children}">
                     <TextBlock>
-                        <Run Text="{Binding FullMoveNumber}" />.
-                        <Run Text="{Binding WhiteMoveSan}" />
-                        <Run Text="{Binding BlackMoveSan}" />
+                        <Run Text="{Binding Depth}" />.
+                        <Run Text="{Binding Text}" />
                     </TextBlock>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
