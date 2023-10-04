@@ -18,8 +18,10 @@ namespace ChessRepertoire.ViewModel.MoveExplorer {
         public MoveExplorerViewModel(ChessGame game) {
             var locker = new object();
 
+            var groups = game.BoardStates.Connect().DistinctValues(x => x.Id);
+
             var predecessors = game.Edges.Connect().Synchronize(locker)
-                .Group(x => x.To, game.BoardStates.Connect().DistinctValues(x => x.Id))
+                .Group(x => x.To, groups)
                 .AsObservableCache();
 
 
