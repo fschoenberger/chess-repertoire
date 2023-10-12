@@ -19,8 +19,8 @@ public enum CastlingRights {
 public class ChessGame : ReactiveObject {
     private readonly ILogger? _logger;
 
-    private readonly ObservableAsPropertyHelper<GameState> _currentGameState;
-    private GameState CurrentGameState => _currentGameState.Value;
+    [Reactive]
+    private GameState CurrentGameState { get; set; }
 
     private readonly ObservableAsPropertyHelper<Color> _currentTurn;
     public Color CurrentTurn => _currentTurn.Value;
@@ -34,7 +34,7 @@ public class ChessGame : ReactiveObject {
     private readonly ObservableAsPropertyHelper<IReadOnlyDictionary<Square, ChessPiece>> _pieces;
     public IReadOnlyDictionary<Square, ChessPiece> Pieces => _pieces.Value;
 
-    private readonly ISourceList<GameState> _stateStack = new SourceList<GameState>();
+    public ISourceList<GameState> RootStates { get; } = new SourceList<GameState>();
 
     public ChessGame(
         IEnumerable<ChessPiece> pieces,
@@ -52,16 +52,13 @@ public class ChessGame : ReactiveObject {
             fullMoveNumber
         );
 
-        _stateStack.Add(state);
+        RootStates.Add(state);
+        CurrentGameState = state;
 
         _logger = logger ?? new DebugLoggerProvider().CreateLogger(nameof(ChessGame));
 
-        var currentBoardState = _stateStack
-            .Connect()
-            .QueryWhenChanged(q => q.LastOrDefault())
-            .WhereNotNull();
+        var currentBoardState = this.WhenAnyValue(x => x.CurrentGameState);
 
-        _currentGameState = currentBoardState.ToProperty(this, x => x.CurrentGameState);
         _currentTurn = currentBoardState.Select(x => x.CurrentTurn).ToProperty(this, x => x.CurrentTurn);
         _castlingRights = currentBoardState.Select(x => x.CastlingRights).ToProperty(this, x => x.CastlingRights);
         _enPassantTargetSquare = currentBoardState.Select(x => x.EnPassantTargetSquare).ToProperty(this, x => x.EnPassantTargetSquare);
@@ -69,6 +66,6 @@ public class ChessGame : ReactiveObject {
     }
 
     public void MakeMove(Move move) {
-        _stateStack.Add(CurrentGameState.WithMove(move));
+        CurrentGameState = CurrentGameState.WithMove(move);
     }
 }

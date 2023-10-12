@@ -1,10 +1,14 @@
 ﻿namespace ChessRepertoire.Model.Board;
 
 public class Edge {
-    public UInt128 Id => ((UInt128)From << 64) | To;
+    public Move Move { get; init; }
 
-    public string Move { get; init; }
+    public GameState From { get; init; }
+    public GameState To { get; init; }
 
-    public ulong From { get; init; }
-    public ulong To { get; init; }
+    public Edge(Move move, GameState from, GameState to) {
+        Move = move;
+        From = from;
+        To = to;
+    }
 }
