@@ -15,15 +15,12 @@ using DynamicData.Kernel;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace ChessRepertoire.ViewModel.Board
-{
-    public class BoardViewModel : ReactiveObject, IBoardViewModel
-    {
+namespace ChessRepertoire.ViewModel.Board {
+    public class BoardViewModel : ReactiveObject, IBoardViewModel {
         private readonly IFieldViewModel[,] _fields;
-        public IEnumerable<IFieldViewModel> Fields
-        {
-            get
-            {
+
+        public IEnumerable<IFieldViewModel> Fields {
+            get {
                 var rowCount = _fields.GetLength(0);
                 var columnCount = _fields.GetLength(1);
 
@@ -34,9 +31,10 @@ namespace ChessRepertoire.ViewModel.Board
             }
         }
 
-        
+
 
         private readonly ObservableAsPropertyHelper<IEnumerable<IPieceViewModel>> _pieces;
+
         public IEnumerable<IPieceViewModel> Pieces => _pieces.Value;
 
         [Reactive] public Color Orientation { get; set; } = Color.White;
@@ -51,28 +49,21 @@ namespace ChessRepertoire.ViewModel.Board
 
         private readonly ChessGame _game;
 
-        [Reactive]
-        public IPieceViewModel? SelectedPiece { get; set; }
+        [Reactive] public IPieceViewModel? SelectedPiece { get; set; }
 
-        public BoardViewModel(ChessGame game)
-        {
+        public BoardViewModel(ChessGame game) {
             _game = game;
             _fields = new IFieldViewModel[8, 8];
 
-            for (var i = 0; i < 8; ++i)
-            {
-                for (var j = 0; j < 8; ++j)
-                {
+            for (var i = 0; i < 8; ++i) {
+                for (var j = 0; j < 8; ++j) {
                     _fields[i, j] = new FieldViewModel { Rank = i, File = j };
                 }
             }
 
             Promotion = new Interaction<Unit, PieceType>();
 
-            FlipBoardCommand = ReactiveCommand.Create(() =>
-            {
-                Orientation = Orientation == Color.Black ? Color.White : Color.Black;
-            });
+            FlipBoardCommand = ReactiveCommand.Create(() => { Orientation = Orientation == Color.Black ? Color.White : Color.Black; });
 
             SelectFieldCommand = ReactiveCommand.CreateFromTask(async (IFieldViewModel field) => await SelectField(field));
 
@@ -84,8 +75,7 @@ namespace ChessRepertoire.ViewModel.Board
                 .ToProperty(this, x => x.Pieces);
         }
 
-        private async Task SelectField(IFieldViewModel field)
-        {
+        private async Task SelectField(IFieldViewModel field) {
             Debug.WriteLine($"Click on {(char)('A' + field.File)}{field.Rank + 1}");
 
             var rank = field.Rank;
@@ -93,8 +83,8 @@ namespace ChessRepertoire.ViewModel.Board
 
             // Figure out if there is a piece at this position
             var piece = Pieces.FirstOrOptional(p => p.Rank == rank && p.File == file);
-            if (piece.HasValue)
-            {
+
+            if (piece.HasValue) {
                 await SelectPiece(piece.Value);
                 return;
             }
@@ -106,8 +96,7 @@ namespace ChessRepertoire.ViewModel.Board
             await MakeMove(file, rank);
         }
 
-        private async Task SelectPiece(IPieceViewModel piece)
-        {
+        private async Task SelectPiece(IPieceViewModel piece) {
             Debug.WriteLine($"Click on {piece.Color} {piece.Type} at {(char)('A' + piece.File)}{piece.Rank + 1}");
 
             if (piece.Color == _game.CurrentTurn) {
@@ -126,26 +115,31 @@ namespace ChessRepertoire.ViewModel.Board
         }
 
         private async Task MakeMove(int targetFile, int targetRank) {
-            if (SelectedPiece == null)
-                return;
+            try {
+                if (SelectedPiece == null)
+                    return;
 
-            // TODO: We need to deal with promotions here properly instead of auto-promoting
-            ChessPiece? promotion = null;
-            if (targetRank is 0 or 7 && SelectedPiece.Type == PieceType.Pawn) {
-                var pieceType = await Promotion.Handle(Unit.Default);
+                ChessPiece? promotion = null;
 
-                promotion = new ChessPiece(SelectedPiece.Color, pieceType, new Square(targetFile, targetRank));
-            }
+                if (targetRank is 0 or 7 && SelectedPiece.Type == PieceType.Pawn) {
+                    var pieceType = await Promotion.Handle(Unit.Default);
 
-            var move = new Move(
-                new Square(SelectedPiece.File, SelectedPiece.Rank),
-                new Square(targetFile, targetRank),
-                promotion
-            );
+                    promotion = new ChessPiece(SelectedPiece.Color, pieceType, new Square(targetFile, targetRank));
+                }
 
-            if (_game.MakeMove(move))
-            {
+                var move = new Move(
+                    new Square(SelectedPiece.File, SelectedPiece.Rank),
+                    new Square(targetFile, targetRank),
+                    promotion
+                );
+
+                _game.MakeMove(move);
+
                 SelectedPiece = null;
+
+            }
+            catch (Exception e) {
+                Debug.WriteLine(e);
             }
         }
     }
