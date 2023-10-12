@@ -8,22 +8,28 @@ using Microsoft.Extensions.Logging.Debug;
 
 namespace ChessRepertoire.Model.Board;
 
-public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassantTargetSquare, CastlingRights CastlingRights, Color CurrentTurn) {
-    private const int BoardSize = 8;
-    private const int NumPieces = 12; // 6 piece types in 2 colors
-    private const int NumSquares = BoardSize * BoardSize;
+/// <summary>
+/// Represents a snapshot of a chessboard's layout, focusing solely on the immediate configuration of pieces and other positional elements.
+/// Unlike the <see cref="GameState"/> class, the Position class is largely indifferent to overarching game rules.
+/// For example, in situations like the Berlin draw, the same Position may occur multiple times while the GameState evolves due to the threefold repetition rule.
+/// </summary>
+/// <param name="Pieces">A dictionary that associates each Square on the board with its corresponding ChessPiece.</param>
+/// <param name="EnPassantTargetSquare">Specifies the square where an en passant capture may occur, if applicable.</param>
+/// <param name="CastlingRights">Stores the current castling permissions for both white and black players.</param>
+/// <param name="CurrentTurn">Indicates which player's turn it is.</param>
+public record Position(Dictionary<Square, ChessPiece> Pieces, Square? EnPassantTargetSquare, CastlingRights CastlingRights, Color CurrentTurn) {
+    private readonly ILogger _logger = new DebugLoggerProvider().CreateLogger(nameof(Position));
 
-    private readonly ILogger _logger = new DebugLoggerProvider().CreateLogger(nameof(BoardState));
-
-    //private readonly ulong _id = GetZobristHash();
     public ulong Id => GetZobristHash();
-    
+
     private ulong GetZobristHash() {
+        const int numSquares = 8 * 8;
+
         ulong hash = 0;
 
         foreach (var piece in Pieces.Values) {
             var index = (int)piece.Type + (piece.Color == Color.White ? 6 : 0);
-            hash ^= ZobristConstants.PieceKeys[index * NumSquares + piece.Square.Rank * 8 + piece.Square.File];
+            hash ^= ZobristConstants.PieceKeys[index * numSquares + piece.Square.Rank * 8 + piece.Square.File];
         }
 
         if (CurrentTurn != Color.White) {
@@ -91,8 +97,7 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
         return builder.ToString();
     }
 
-    public BoardState MakeMove(Move? move) {
-
+    public Position WithMove(Move? move) {
         #region Validation
         if (IsCheckmate()) {
             _logger.LogDebug("Move is not legal because the game has already ended.");
@@ -128,7 +133,7 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
         return IsCastlingMove(piece, move) ? TryCastling(piece, move) : TryMove(piece, move);
     }
 
-    private BoardState TryMove(ChessPiece piece, Move move) {
+    private Position TryMove(ChessPiece piece, Move move) {
         if (!CanMoveTo(piece, move.To, Pieces)) {
             _logger.LogDebug("Move is not legal because the piece can't move there.");
             throw new InvalidOperationException("Move is not legal because the piece can't move there.");
@@ -175,10 +180,10 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
         }
 
         Pieces.TryGetValue(move.From, out var capturedPiece);
-        return new BoardState(pieces, enPassantTargetSquare, CalculateCastlingRights(move, piece, capturedPiece, CastlingRights), CurrentTurn.Flipped());
+        return new Position(pieces, enPassantTargetSquare, CalculateCastlingRights(move, piece, capturedPiece, CastlingRights), CurrentTurn.Flipped());
     }
 
-    private BoardState TryCastling(ChessPiece piece, Move move) {
+    private Position TryCastling(ChessPiece piece, Move move) {
         // There probably are nicer ways to write this, buuut... ¯\_(ツ)_/¯
         var direction = (piece, move.From, move.To) switch {
             ( { Color: Color.White, Type: PieceType.King }, { File: 4, Rank: 0 }, { File: 2, Rank: 0 }) => CastlingRights.WhiteQueenSide,
@@ -264,7 +269,7 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
             default: throw new Exception("This should never happen!");
         }
 
-        return new BoardState(
+        return new Position(
             pieces,
             null,
             castlingRights,
@@ -468,7 +473,7 @@ public record BoardState(Dictionary<Square, ChessPiece> Pieces, Square? EnPassan
 
     private bool IsLegalMoveHack(Move? move) {
         try {
-            MakeMove(move);
+            WithMove(move);
             return true;
         }
         catch {

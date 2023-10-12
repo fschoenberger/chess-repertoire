@@ -101,7 +101,7 @@ namespace ChessRepertoire.Infrastructure
                 throw new IllegalFenException($"Full move number must be an integer, instead is {components[5]}", e);
             }
 
-            return new ChessGame(pieces, currentTurn, halfMoveClock, fullMoveNumber, castlingRights, enPassantTargetSquare);
+            return new ChessGame(pieces, currentTurn, fullMoveNumber, castlingRights, enPassantTargetSquare);
         }
     }
 }
