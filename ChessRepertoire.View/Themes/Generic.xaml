@@ -1,0 +1,21 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:ChessRepertoire.View.Wpf"
+    xmlns:moveExplorer="clr-namespace:ChessRepertoire.View.Wpf.Control.MoveExplorer">
+
+
+    <Style TargetType="{x:Type moveExplorer:MoveExplorer}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="moveExplorer:MoveExplorer">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <WrapPanel x:Name="PART_ItemsPanel"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

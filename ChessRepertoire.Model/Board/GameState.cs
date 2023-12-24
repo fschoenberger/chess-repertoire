@@ -17,31 +17,24 @@ namespace ChessRepertoire.Model.Board {
 
         public int FullMoveNumber { get; }
 
-        private readonly ISourceCache<Edge, Move> _children = new SourceCache<Edge, Move>(x => x.Move);
-        public IObservableCache<Edge, Move> Children => _children;
+        public Move Move { get; }
 
-        public readonly GameState? Parent;
+        public Guid Id { get; } = new();
 
-        public GameState(Position currentPosition, int fullMoveNumber, GameState? parent = null) {
+        public readonly Guid? Parent;
+
+        public GameState(Position currentPosition, int fullMoveNumber, Move move, GameState? parent = null) {
             _currentPosition = currentPosition;
             FullMoveNumber = fullMoveNumber;
-            Parent = parent;
+            Move = move;
+            Parent = parent?.Id;
         }
 
         public GameState WithMove(Move move) {
-            var maybeRet = _children.Lookup(move);
-
-            if (maybeRet.HasValue) {
-                return maybeRet.Value.To;
-            }
-
             var newFullMoveNumber = _currentPosition.CurrentTurn == Color.White ? FullMoveNumber : FullMoveNumber + 1;
             var newPosition = _currentPosition.WithMove(move);
 
-            var ret = new GameState(newPosition, newFullMoveNumber, this);
-            _children.AddOrUpdate(new Edge(move, this, ret));
-
-            return ret;
+            return new GameState(newPosition, newFullMoveNumber, move, this);
         }
     }
 

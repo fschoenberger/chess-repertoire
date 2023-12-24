@@ -31,7 +31,6 @@ namespace ChessRepertoire.ViewModel.Board {
             }
         }
 
-
         private readonly ObservableAsPropertyHelper<IEnumerable<IPieceViewModel>> _pieces;
 
         public IEnumerable<IPieceViewModel> Pieces => _pieces.Value;

@@ -34,7 +34,8 @@ public class ChessGame : ReactiveObject {
     private readonly ObservableAsPropertyHelper<IReadOnlyDictionary<Square, ChessPiece>> _pieces;
     public IReadOnlyDictionary<Square, ChessPiece> Pieces => _pieces.Value;
 
-    public ISourceList<GameState> RootStates { get; } = new SourceList<GameState>();
+    private ISourceCache<GameState, Guid> _gameStates = new SourceCache<GameState, Guid>(x => x.Id);
+    public IObservableCache<GameState, Guid> GameStates => _gameStates;
 
     public ChessGame(
         IEnumerable<ChessPiece> pieces,
@@ -43,16 +44,18 @@ public class ChessGame : ReactiveObject {
         CastlingRights castlingRights = CastlingRights.BlackKingSide | CastlingRights.BlackQueenSide | CastlingRights.WhiteKingSide | CastlingRights.WhiteQueenSide,
         Square? enPassantTargetSquare = null,
         ILogger<ChessGame>? logger = null) {
+
         var state = new GameState(
             new Position(
             pieces.ToDictionary(x => x.Square),
             enPassantTargetSquare,
             castlingRights,
             currentTurn),
-            fullMoveNumber
+            fullMoveNumber,
+            null
         );
 
-        RootStates.Add(state);
+        _gameStates.AddOrUpdate(state);
         CurrentGameState = state;
 
         _logger = logger ?? new DebugLoggerProvider().CreateLogger(nameof(ChessGame));

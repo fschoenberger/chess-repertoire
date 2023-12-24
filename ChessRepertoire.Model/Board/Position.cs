@@ -99,10 +99,10 @@ public record Position(Dictionary<Square, ChessPiece> Pieces, Square? EnPassantT
 
     public Position WithMove(Move? move) {
         #region Validation
-        if (IsCheckmate()) {
-            _logger.LogDebug("Move is not legal because the game has already ended.");
-            throw new InvalidOperationException("Move is not legal because the game has already ended.");
-        }
+        //if (IsCheckmate()) {
+        //    _logger.LogDebug("Move is not legal because the game has already ended.");
+        //    throw new InvalidOperationException("Move is not legal because the game has already ended.");
+        //}
 
         if (move == null) {
             _logger.LogDebug("Move is not legal because it was null.");
